@@ -3,7 +3,7 @@ var {app, Menu} = require('electron'),
     path = require('path')
 
 app.commandLine.appendSwitch('--touch-events')
-
+app.disableHardwareAcceleration();
 
 if (settings.read('noVsync') || (!settings.cli && settings.read('argv')['disable-vsync'])) {
     app.commandLine.appendSwitch('--disable-gpu-vsync')
