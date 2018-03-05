@@ -1,0 +1,21 @@
+@media screen and (min-width:768px) {
+	:root {
+		.tablink {
+			font-size: 115%;
+		}
+		.label, .text {
+			font-size: 130%;
+		}
+	}
+}
+
+@media screen and (min-width:1024px) {
+	:root {
+		.tablink {
+			font-size: 120%;
+		}
+		.label, .text {
+			font-size: 140%;
+		}
+	}
+}
