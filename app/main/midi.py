@@ -171,9 +171,14 @@ def sendMidi(name, event, *args):
         else:
             m = rtmidi.MidiMessage.noteOff(args[0], args[1])
 
-    elif 'control' in event and len(args) == 3:
+    elif 'control' in event:
         args = [int(round(x)) for x in args]
-        m = rtmidi.MidiMessage.controllerEvent(*args)
+        if len(args) == 3:
+            m = rtmidi.MidiMessage.controllerEvent(*args)
+        elif len(args) == 4:
+            ipcSend('log', 'salut')
+            # multifader
+            m = rtmidi.MidiMessage.controllerEvent(args[0], args[1] + args[2], args[3])
 
     elif 'program' in event and len(args) == 2:
         args = [int(round(x)) for x in args]
