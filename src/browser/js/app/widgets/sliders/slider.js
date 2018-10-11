@@ -51,19 +51,21 @@ class Slider extends Canvas {
             clip(this.getProp('origin'), [this.rangeValsMin,this.rangeValsMax])
 
         this.springValue = this.getProp('default') !== '' ? this.getProp('default') :  this.originValue
-
+        this.lastDoubleTap  = 0
         if (this.getProp('doubleTap')) {
 
             if (typeof this.getProp('doubleTap') === 'string' && this.getProp('doubleTap')[0] === '/') {
 
                 doubletab(this.widget, ()=>{
                     this.sendValue({v:null, address: this.getProp('doubleTap')})
+                    this.lastDoubleTap = Date.now()
                 })
 
             } else {
 
                 doubletab(this.widget, ()=>{
                     this.setValue(this.springValue,{sync:true, send:true, fromLocal:true})
+                    this.lastDoubleTap = Date.now()
                 })
 
             }
@@ -154,8 +156,8 @@ class Slider extends Canvas {
     }
 
     dragendHandle(e, data, traversing) {
-
-        if (this.getProp('spring')) {
+        const hasMoved = e.movementX!==0 && e.movementY!==0
+        if (hasMoved && this.getProp('spring')) {
             this.setValue(this.springValue,{sync:true,send:true,fromLocal:true})
         }
 
