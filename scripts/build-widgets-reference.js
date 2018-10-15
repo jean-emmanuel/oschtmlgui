@@ -12,6 +12,9 @@ document = {
             }},
             selectNode: ()=>{}
         }
+    },
+    body: {
+        appendChild: ()=>{}
     }
 }
 
@@ -31,6 +34,7 @@ Object.assign(global, window)
 // Required globals
 
 DOM = require('../src/browser/js/app/dom')
+DOM.get = x=>[{addEventListener:()=>{}}]
 DOM.init()
 CANVAS_FRAMERATE = 1
 LANG = 'en'
@@ -38,7 +42,8 @@ LANG = 'en'
 // Here we go
 
 var widgets = require('../src/browser/js/app/widgets'),
-    base = require('../src/browser/js/app/widgets/common/widget').defaults(),
+    baseClass = require('../src/browser/js/app/widgets/common/widget'),
+    base = baseClass.defaults(),
     doc = []
 
 
@@ -63,10 +68,12 @@ for (var propName in base) {
 
     if (propName === '_props' || propName[0] === '_') continue
 
-    var help = Array.isArray(prop.help) ? prop.help.join('<br/><br/>').replace(/<br\/>-/g, '-') : prop.help || ''
+    var help = Array.isArray(prop.help) ? prop.help.join('<br/><br/>').replace(/<br\/>-/g, '-') : prop.help || '',
+        dynamic = baseClass.dynamicProps.includes(propName) ? '<i class="dynamic-prop-icon" title="dynamic"></i>' : ''
+
 
     doc.push(`
-        | <h4 id="${permalink}">${propName}<a class="headerlink" href="#${permalink}" title="Permanent link">¶</a></h4> | \`${prop.type.replace(/\|/g,'\`\\|<br/>\`')}\` | <code>${(JSON.stringify(prop.value, null, '&nbsp;') || '').replace(/\n/g,'<br/>')}</code> | ${help} |`
+        | <h4 id="${permalink}">${propName}${dynamic}<a class="headerlink" href="#${permalink}" title="Permanent link">¶</a></h4> | \`${prop.type.replace(/\|/g,'\`\\|<br/>\`')}\` | <code>${(JSON.stringify(prop.value, null, '&nbsp;') || '').replace(/\n/g,'<br/>')}</code> | ${help} |`
     )
 
 }
@@ -109,10 +116,11 @@ for (var k in widgets.categories) {
 
             if (propName === '_props' || propName[0] === '_' || JSON.stringify(prop) == JSON.stringify(base[propName])) continue
 
-            var help = Array.isArray(prop.help) ? prop.help.join('<br/><br/>').replace(/<br\/>-/g, '-') : prop.help || ''
+            var help = Array.isArray(prop.help) ? prop.help.join('<br/><br/>').replace(/<br\/>-/g, '-') : prop.help || '',
+                dynamic = widgets.widgets[type].dynamicProps.includes(propName) ? '<i class="dynamic-prop-icon" title="dynamic"></i>' : ''
 
             doc.push(`
-                | <h4 id="${permalink}">${propName}<a class="headerlink" href="#${permalink}" title="Permanent link">¶</a></h4> | \`${prop.type.replace(/\|/g,'\`\\|<br/>\`')}\` | <code>${(JSON.stringify(prop.value, null, '&nbsp;') || '').replace(/\n/g,'<br/>')}</code> | ${help} |`
+                | <h4 id="${permalink}">${propName}${dynamic}<a class="headerlink" href="#${permalink}" title="Permanent link">¶</a></h4> | \`${prop.type.replace(/\|/g,'\`\\|<br/>\`')}\` | <code>${(JSON.stringify(prop.value, null, '&nbsp;') || '').replace(/\n/g,'<br/>')}</code> | ${help} |`
             )
             separator = false
         }

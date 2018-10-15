@@ -68,10 +68,14 @@
     "build-js": "npm run build-launcher-js && npm run build-browser-js",
     "build-browser-js": "node scripts/build-browser.js > app/browser/scripts.js",
     "build-launcher-js": "node scripts/build-launcher.js > app/launcher/scripts.js",
+    "watch-browser" : "node scripts/build-browser.js --watch",
     "deploy-docs": "node scripts/build-widgets-reference.js > resources/docs/widgets-reference.md && cd resources && mkdocs gh-deploy --clean && rm -rf site",
     "test": "npm run build"
   },
   "engines": {
     "node": ">=6"
+  },
+  "devDependencies": {
+    "watchify": "^3.11.0"
   }
 }
