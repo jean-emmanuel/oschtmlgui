@@ -40,39 +40,61 @@ class Clone extends Container {
         this.getCloneTarget()
         if (this.cloneTarget) this.createClone()
 
+        // global listenner to catch cloneTarget's creation if no target is locked
         widgetManager.on(`widget-created.${this.hash}`, (e)=>{
-            var {id, widget} = e
-            if (
-                this.cloneTarget === null &&
-                id === this.getProp('widgetId') &&
-                this.isValidCloneTarget(widget)
-            ) {
-                this.cloneTarget = widget
-                this.createClone()
-                resize.check(this.container)
-            }
-        })
 
-        widgetManager.on(`widget-removed.${this.hash}`, (e)=>{
-            if (this.cloneTarget === e.widget) {
-                this.cloneTarget = null
-                this.cleanClone()
+            if (this.cloneTarget === null) {
+
+                var {id, widget} = e
+
+                if (id === this.getProp('widgetId') && this.isValidCloneTarget(widget)) {
+
+                    this.cloneTarget = widget
+                    this.createClone()
+                    resize.check(this.container)
+
+                }
+
             }
+
         })
 
     }
 
     getCloneTarget() {
 
-        var widgets = widgetManager.getWidgetById(this.getProp('widgetId'))
-        for (var i in widgets) {
-            if (
-                this.isValidCloneTarget(widgets[i])
-            ) {
+        // attempt to acquire a cloneTarget if 'widget-created' event has not been catched
+        // (the target might have been created before the clone itself)
 
-                this.cloneTarget = widgets[i]
+        const widgets = widgetManager.getWidgetById(this.getProp('widgetId'))
+                                   .filter(el=>this.isValidCloneTarget(el))
+
+        if (widgets.length === 0) return
+        if (widgets.length === 1) {
+            this.cloneTarget = widgets[0]
+            return
+         }
+
+        // when duplicating clones pointing to an object with a static id,
+        // each clone will recreate an object with the same id internally
+        // we try to get the original one if there is more than 2 clone pointing to the same id (avoiding cloning the clone)
+
+        function isCreatedByAClone(wi){
+            const parent = wi.parent
+            return parent && parent.getProp('type') === 'clone'
+        }
+
+        this.cloneTarget = widgets[0]
+        for (const w of widgets) {
+            if (!isCreatedByAClone(w)) {
+                this.cloneTarget = w
                 break
             }
+        }
+
+        // we may want to remove this warning
+        if (isCreatedByAClone(this.cloneTarget)) {
+            console.warn('no deduped clone found : ',this.getProp('widgetId'))
         }
 
     }
@@ -85,21 +107,37 @@ class Clone extends Container {
 
     cleanClone() {
 
-        if (!this.childrenHashes.length) return
+        // don't clean if clone is already empty
+        if (!this.children.length) return
 
-        widgetManager.removeWidgets(this.childrenHashes)
+        //console.log('clear clone',this.getProp('id'))
+
+        // unregister cloned content
+        widgetManager.removeWidgets(this.children)
+        this.children = []
+
+        // clean inner html
         this.widget.innerHTML = ''
-        this.childrenHashes = []
         this.container.classList.remove(...this.cloneClass)
         this.container.classList.add('clone-container', 'empty')
         this.cloneClass = []
-        if (this.cloneTarget) this.cloneTarget.off(`widget-created.${this.hash}`)
+
+        // clear event listeners on target
+        if (this.cloneTarget) {
+            this.cloneTarget.off(`widget-removed.${this.hash}`)
+            this.cloneTarget.off(`widget-created.${this.hash}`)
+        }
 
     }
 
     createClone() {
 
-        if (this.cloneLock) return
+        if (this.cloneLock) {
+            //console.warn('clone locked',this.id)
+            return
+        }
+        //console.log('create clone',this.getProp('id'))
+
         this.cloneLock = true
 
         this.cleanClone()
@@ -107,8 +145,8 @@ class Clone extends Container {
         this.cloneClass = [...this.cloneTarget.container.classList].filter(i=>excludedCloneClasses.indexOf(i) === -1)
         this.container.classList.remove('empty')
         this.container.classList.add(...this.cloneClass)
-
-        var clone = parser.parse([{...deepCopy(this.cloneTarget.props), ...this.getProp('props')}], this.widget, this)
+        let clonedProps = deepCopy(this.cloneTarget.props)
+        var clone = parser.parse([{...clonedProps, ...this.getProp('props')}], this.widget, this)
 
         if (clone.getProp('id') === this.cloneTarget.getProp('id')) {
             widgetManager.trigger('change.*', [{
@@ -120,11 +158,35 @@ class Clone extends Container {
         }
 
 
-        DOM.each(this.widget, '.widget', (el)=>{el.classList.add('not-editable')})
+        for (var i = 0; i < this.children.length; i++) {
+            this.children[i].container.classList.add('not-editable')
+        }
 
-        this.cloneTarget.once(`widget-created.${this.hash}`, (e)=>{
-            this.createClone(this.cloneTarget)
+        // listen for cloneTarget's deletion
+        // if it is just edited, its recreation will be catched by the global 'widget-created' event handler
+        this.cloneTarget.on(`widget-removed.${this.hash}`, (e)=>{
+            if (this.cloneTarget === e.widget) {
+                this.cloneTarget = null
+                this.cleanClone()
+            }
+        })
+
+        // listen for cloneTarget's content updates
+        this.cloneTarget.on(`widget-created.${this.hash}`, (e)=>{
+
+            var {widget} = e,
+                parent = widget.parent
+
+            while (parent !== this.cloneTarget && parent !== widgetManager) {
+                // if updated widget is in a nested clone, ignore it:
+                // it will be handled by the nested clone that targets it
+                if (parent.getProp('type') === 'clone') return
+                parent = widget.parent
+            }
+
+            this.createClone()
             resize.check(this.container)
+
         })
 
         this.cloneLock = false
@@ -150,8 +212,11 @@ class Clone extends Container {
 
     onRemove(){
 
-        if (this.cloneTarget) this.cloneTarget.off(`widget-created.${this.hash}`)
-        widgetManager.off(`widget-removed.${this.hash}`)
+        if (this.cloneTarget) {
+            this.cloneTarget.off(`widget-removed.${this.hash}`)
+            this.cloneTarget.off(`widget-created.${this.hash}`)
+        }
+
         super.onRemove()
 
     }
