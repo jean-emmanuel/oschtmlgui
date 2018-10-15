@@ -2,10 +2,42 @@ var widgetManager = require('../managers/widgets'),
     resize = require('../events/resize'),
     stateManager = require('../managers/state'),
     parser = require('../parser'),
+    {deepCopy, deepEqual} = require('../utils'),
     editor
 
 var updateWidget = function(widget, options = {}) {
 
+    if(!options.forceRecreation ){
+        const changedObj = getChangedProps(widget);
+        if(!nonDynamicPropChanged(changedObj)){
+
+
+            function triggerChange(changedObj){
+                const {widget,childrens,changed} = changedObj
+                for(var i in childrens){
+                    triggerChange(childrens[i])
+                }
+                for(var i in changed){
+                    options ={}
+                    for (var i in changedProps) {
+                        widget.onPropChanged(changedProps[i].propName, options, changedProps[i].oldPropValue)
+                    }
+
+                    widget.trigger('prop-changed.*', [{
+                        id: widget.getProp('id'),
+                        props: changedProps,
+                        widget: widget,
+                        options: options
+                    }])
+
+                }
+            }
+            triggerChange(changedObj)
+            return widget
+        }
+
+
+    }
     // save state
     var sidepanel = DOM.get('#sidepanel')[0],
         scroll = sidepanel.scrollTop,
@@ -14,6 +46,7 @@ var updateWidget = function(widget, options = {}) {
         wScroll = {}
 
     stateManager.incrementQueue()
+
 
     for (let widget of oldWidgets) {
         if (widgetManager.widgets[widget.hash]) {
@@ -70,6 +103,35 @@ var updateWidget = function(widget, options = {}) {
 
 }
 
+function nonDynamicPropChanged(changedObj){
+    for(var k of changedObj.changedProps){
+        if(!changedObj.widget.constructor.dynamicProps.includes(k.propName)){
+            return true
+        }
+    }
+    for(var o of changedObj.childrens){
+        if(nonDynamicPropChanged(o)){return true}
+
+    }
+}
+
+function getChangedProps(widget){
+    const res = {widget,'changedProps':[],'childrens':[]}
+    for(var k in widget.cachedProps){
+        const p = widget.cachedProps[k]
+        const np = widget.resolveProp(k, undefined, false)
+        if(!deepEqual(np,p)){
+            res.changedProps.push({'propName':k,'oldPropValue':p})
+        }
+    }
+
+    for( var c in widget.childrens){
+        res.childrens.push(getChangedProps(widget.children[c]))
+    }
+
+    return res;
+
+}
 var fakeStore = {}
 
 var incrementWidget = function(data, root){

@@ -157,6 +157,7 @@ class Widget extends EventEmitter {
 
         // cache props (resolve @{props})
         this.cachedProps = {}
+        this.changedPropSet = {}
 
         for (var k in this.props) {
             if (k != 'widgets' && k != 'tabs') {
@@ -546,6 +547,33 @@ class Widget extends EventEmitter {
     getProp(propName) {
         return this.cachedProps[propName]
     }
+    setProp(propName,propValue,changedSetName) {
+        // otions = {alreadyResolved,changeSetName}
+        // const {changedSetName = options
+        const oldPropValue = this.getProp(propName)
+        const changed = propValue!=oldPropValue
+        if(!changed){return }
+        
+        const changeInfo = {propName,oldPropValue,propValue}
+        if(changedSetName){
+            if (!this.changedPropSet[changedSetName])this.changedPropSet[changedSetName] =[]
+            this.changedPropSet[changedSetName].push(changeInfo)
+        }
+        
+        else{
+            const chOptions = {}
+            this._notifyChangedProps([changeInfo],chOptions)
+
+        }
+    }
+
+    applyPropChanges(changedSetName,options){
+        const changedProps = this.changedPropSet[changedSetName]
+        if (changedProps){
+            this._notifyChangedProps(this.changedPropSet[changedSetName],options)
+            delete this.changedPropSet[changedSetName] 
+        }
+    }
 
     updateProps(propNames, widget, options, updatedProps = []) {
 
@@ -574,7 +602,7 @@ class Widget extends EventEmitter {
                 } else {
 
                     this.cachedProps[propName] = propValue
-                    changedProps.push({propName, oldPropValue})
+                    changedProps.push({propName, oldPropValue,propValue})
 
                 }
 
@@ -588,19 +616,28 @@ class Widget extends EventEmitter {
 
         } else if (changedProps.length) {
 
-            for (var i in changedProps) {
-                this.onPropChanged(changedProps[i].propName, options, changedProps[i].oldPropValue)
-            }
-
-            widgetManager.trigger('prop-changed.*', [{
-                id: this.getProp('id'),
-                props: changedProps,
-                widget: this,
-                options: options
-            }])
+            this._notifyChangedProps(changedProps,options)
 
         }
 
+    }
+
+    _notifyChangedProps(changedProps,options={}){
+        const {doResolve} = options
+        for (var i in changedProps) {
+            const {propName,propValue,oldPropValue}  = changedProps[i]
+            this.props[propName] = propValue
+            this.cachedProps[propName] = doResolve?this.resolveProp(propName,false):propValue
+            this.onPropChanged(propName, options, oldPropValue)
+        }
+
+        this.trigger('prop-changed.*', [{
+            id: this.getProp('id'),
+            props: changedProps,
+            widget: this,
+            options: options
+        }])
+        
     }
 
     onPropChanged(propName, options, oldPropValue) {

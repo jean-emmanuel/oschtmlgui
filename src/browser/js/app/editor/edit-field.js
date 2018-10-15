@@ -88,7 +88,7 @@ module.exports = function editField(editor, widget, propName, defaultValue){
 
         var onChange = ()=>{
 
-            input.removeEventListener('change', onChange)
+            //input.removeEventListener('change', onChange)
 
             var v
 
@@ -100,12 +100,35 @@ module.exports = function editField(editor, widget, propName, defaultValue){
 
             var newWidgets = []
             for (var w of editor.selectedWidgets) {
-                w.props[propName] = v !== '' ? v : deepCopy(defaultValue.value)
-                newWidgets.push(updateWidget(w, {preventSelect: editor.selectedWidgets.length > 1}))
+                const targetV = v !== '' ? v : deepCopy(defaultValue.value)
+                if(dynamic){
+                    w.setProp(propName, targetV)
+                    newWidgets.push(w)
+                }
+                else{
+                    
+                    w.props[propName] = targetV
+                    newWidgets.push(updateWidget(w, {preventSelect: editor.selectedWidgets.length > 1}))
+                }
             }
             editor.pushHistory()
             if (newWidgets.length > 1) editor.select(newWidgets)
 
+        }
+        if(dynamic){
+            widget.on('prop-changed.editor',e=>{
+                const {id, props, options} = e;
+                
+                if(widget.hash===e.widget.hash){
+
+                    if( props.find(el=>el.propName==propName)){
+                        // don't modify computed
+                        // if(widget.cachedProps[propName]===widget.props[propName]){
+                        input.value = ''+widget.props[propName]
+                        // }
+                    }
+                }
+            })
         }
 
         input.addEventListener('change', onChange)
@@ -201,6 +224,7 @@ module.exports = function editField(editor, widget, propName, defaultValue){
                 <p>Type: <code>${defaultValue.type}</code></p>
                 <p>Default: <code>${JSON.stringify(defaultValue.value)}</code></p>
                 <p>Dynamic: <code>${dynamic ? 'true' : 'false'}</code></p>
+                <p>Computed: <code>${JSON.stringify(widget.cachedProps[propName])}</code></p>
 
                 ${htmlError}
 
