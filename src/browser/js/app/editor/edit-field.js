@@ -200,6 +200,7 @@ module.exports = function editField(editor, widget, propName, defaultValue){
                 <p>Type: <code>${defaultValue.type}</code></p>
                 <p>Default: <code>${JSON.stringify(defaultValue.value)}</code></p>
                 <p>Dynamic: <code>${dynamic ? 'true' : 'false'}</code></p>
+                <p>Computed: <code>${widget.cachedProps[propName]}</code></p>
 
                 ${htmlError}
 
