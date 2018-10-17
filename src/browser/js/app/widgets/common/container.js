@@ -8,15 +8,25 @@ class Container extends Widget {
 
         super(options)
 
-        this.on(`widget-created.${this.hash}`, (e)=>{
+        this.on('widget-created', (e)=>{
 
             if (e.widget.parent === this) {
-                this.children.push(e.widget)
+
+                var index = e.index
+                if (index !== undefined) {
+                    if (!this.children[index]) {
+                        this.children[index] = e.widget
+                    } else {
+                        this.children.splice(index, 0, e.widget)
+                    }
+                } else {
+                    this.children.push(e.widget)
+                }
             }
 
         })
 
-        this.on(`widget-removed.${this.hash}`, (e)=>{
+        this.on('widget-removed', (e)=>{
 
             if (e.widget.parent === this) {
                 this.children.splice(this.children.indexOf(e.widget), 1)
@@ -28,7 +38,6 @@ class Container extends Widget {
 
     onRemove() {
 
-        widgetManager.off(`widget-removed.${this.hash}`)
         super.onRemove()
 
     }

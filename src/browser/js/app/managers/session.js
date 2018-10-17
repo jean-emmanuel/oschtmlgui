@@ -50,7 +50,10 @@ var SessionManager = class SessionManager {
 
                 }
 
-                parser.parse(this.session, DOM.get('#container')[0])
+                parser.parse({
+                    data: this.session,
+                    parentNode: DOM.get('#container')[0]
+                })
                 editor.clearHistory()
 
             } catch (err) {
@@ -63,7 +66,7 @@ var SessionManager = class SessionManager {
 
             for (var h in widgetManager.widgets) {
                 if (widgetManager.widgets[h].value !== undefined) {
-                    widgetManager.trigger('change.*', [{
+                    widgetManager.trigger('change', [{
                         widget: widgetManager.widgets[h],
                         id: widgetManager.widgets[h].getProp('id'),
                         linkId: widgetManager.widgets[h].getProp('linkId'),

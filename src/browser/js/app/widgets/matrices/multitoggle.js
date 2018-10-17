@@ -74,7 +74,11 @@ module.exports = class Multitoggle extends _matrix_base {
                 data.preArgs = '@{parent.preArgs}'
             }
 
-            var toggle = parser.parse([data], this.widget, this)
+            var toggle = parser.parse({
+                data: data,
+                parentNode: this.widget,
+                parent: this
+            })
             toggle.container.classList.add('not-editable')
 
             this.value[i-this.start] = this.getProp('off')

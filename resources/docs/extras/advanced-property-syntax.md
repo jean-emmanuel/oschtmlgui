@@ -76,7 +76,6 @@ Where FORMULA is a valid [MathJS](http://mathjs.org/docs/expressions/syntax.html
 - property inheritance calls (`@{...}`) are always resolved before formulas
 - arrays / matrices indexes are **zero-based** (ie `["a","b"][0]` returns `"a"`)
 - strings can be multiline when enclosed in backticks instead of double quotes (``` ` `  ```)
-- inner closing brackets (`}`) must be escaped with a backslash (`\}`) except for `@{}` and `OSC{}` calls which are always resolved before formulas
 
 Additionnal functions:
 
@@ -85,6 +84,7 @@ Additionnal functions:
 - `length(x)`: returns the length of an array or string
 - `keys(x)`: returns an array of a given object's property names (from [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys))
 - `values(x)`: returns an array of a given object's own enumerable property values (from [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/values))
+- `extend(x, y)`: merges two objects into one
 
 !!! tip ""
     A single widget property can contain multiple formulas. Variables and functions declared in a formula are available to subsequent formulas in the same property definition.

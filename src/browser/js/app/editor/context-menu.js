@@ -165,8 +165,10 @@ var handleClick = function(event) {
     if (parent === widgetManager) {
         actions['<i class="fa fa-plus"></i> ' + locales('editor_addtab')] = ()=>{
             data[0].tabs.push({})
-            updateWidget(widget)
-            editor.pushHistory()
+
+            var indexes = {addedIndexes: [data[0].tabs.length -1]}
+            updateWidget(widget, indexes)
+            editor.pushHistory(indexes)
         }
         contextMenu.open(eventData, actions)
 
@@ -214,8 +216,8 @@ var handleClick = function(event) {
 
                 parent.props.widgets = parent.props.widgets.slice(0, i).concat(wrap, parent.props.widgets.slice(i, parent.props.widgets.length))
 
-                editor.select(updateWidget(parent, {preventSelect: true}))
-                editor.pushHistory()
+                editor.select(updateWidget(parent, {preventSelect: true, removedIndexes: index, addedIndexes: [i]}))
+                editor.pushHistory({removedIndexes: index, addedIndexes: [i]})
 
             }
         }
@@ -266,8 +268,10 @@ var handleClick = function(event) {
 
                     data[0].widgets = data[0].widgets || []
                     data[0].widgets.push(newData)
-                    updateWidget(editor.selectedWidgets[0])
-                    editor.pushHistory()
+
+                    var indexes = {addedIndexes: [data[0].widgets.length -1]}
+                    updateWidget(editor.selectedWidgets[0], indexes)
+                    editor.pushHistory(indexes)
 
                 }
 
@@ -282,8 +286,10 @@ var handleClick = function(event) {
         actions['<i class="fa fa-plus"></i> ' + locales('editor_addtab')] = ()=>{
             data[0].tabs = data[0].tabs || []
             data[0].tabs.push({})
-            updateWidget(editor.selectedWidgets[0])
-            editor.pushHistory()
+
+            var indexes = {addedIndexes: [data[0].tabs.length -1]}
+            updateWidget(editor.selectedWidgets[0], indexes)
+            editor.pushHistory(indexes)
 
         }
 

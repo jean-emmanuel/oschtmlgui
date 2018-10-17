@@ -5,7 +5,9 @@
 - bug fixes
   - `@{parent}` calls not working consistently in clone widgets
   - `slider/pads`: inteverted ranges not working
+  - fix `doubleTap` for sliders with `snap` set to `true`
 - editor
+  - major performance improvements (containers' children are reused whenever possible instead of being recreated)
   - removed widget deletion confirmation popup
   - properties categories can now be folded
   - added keyboard shortcut `F2` for editing the label quickly
@@ -17,6 +19,9 @@
   - added keyboard shortcut `mod + shift + a` for cancelling selection
   - added multi widget selection with mouse when `shift` is pressed
   - right-click doesn't modify current selection when `mod` or `shift` is pressed
+- formulas
+  - added `extend(x, y)` function for merging two objects
+  - objects' closing brackets (`}`) don't need to be escaped with a backslash anymore
 
 ## 0.37.4
 

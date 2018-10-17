@@ -24,7 +24,19 @@ var Parser = class Parser {
 
     }
 
-    parse(data, parentNode, parentWidget, tab, reCreateOptions) {
+    parse(options) {
+
+        var {
+            data,
+            parentNode,
+            parent,
+            tab,
+            reCreateOptions,
+            children,
+            index
+            } = options
+
+        if (!Array.isArray(data)) data = [data]
 
         for (let i in data) {
 
@@ -65,11 +77,18 @@ var Parser = class Parser {
             }
 
             // create widget
-            var widget = new this.widgets[props.type]({props:props, container:true, parent:parentWidget, parentNode:parentNode, reCreateOptions})
+            var widget = new this.widgets[props.type]({
+                container:true,
+                props,
+                parent,
+                parentNode,
+                reCreateOptions,
+                children
+            })
 
             widgetManager.addWidget(widget)
 
-            widget.created()
+            widget.created(index)
 
             // set widget's initial state
             var defaultValue = widget.getProp('default'),
@@ -85,8 +104,9 @@ var Parser = class Parser {
 
             }
 
-            // Append the widget to its parent
+
             parentNode.appendChild(widget.container)
+
         }
 
         // Editor needs to get the container object

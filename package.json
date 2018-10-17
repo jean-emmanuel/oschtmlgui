@@ -66,9 +66,9 @@
     "watch-js": "nodemon --watch src/browser/js -e js -x \"npm run build-js\"",
     "build-css": "node scripts/build-css.js",
     "build-js": "npm run build-launcher-js && npm run build-browser-js",
-    "build-browser-js": "node scripts/build-browser.js > app/browser/scripts.js",
+    "build-browser-js": "node scripts/build-browser.js",
     "build-launcher-js": "node scripts/build-launcher.js > app/launcher/scripts.js",
-    "watch-browser" : "node scripts/build-browser.js --watch",
+    "watch-browser": "node scripts/build-browser.js --watch",
     "deploy-docs": "node scripts/build-widgets-reference.js > resources/docs/widgets-reference.md && cd resources && mkdocs gh-deploy --clean && rm -rf site",
     "test": "npm run build"
   },

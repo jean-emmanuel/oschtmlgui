@@ -77,7 +77,6 @@ class Canvas extends Widget {
         this.visible = false
 
         this.colors = {}
-        this.textColor = getComputedStyle(document.documentElement).getPropertyValue('--color-text-fade')
 
         this.on('resize', this.resizeHandleProxy.bind(this), {element: this.canvas})
 

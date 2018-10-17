@@ -88,6 +88,7 @@ module.exports = {
             length: function(x) { return x.length },
             values: function(x) { return Object.values(x) },
             keys: function(x) { return Object.keys(x) },
+            extend: function(x, y) { return Object.assign(x, y) },
             timestamp: function() { return Date.now() },
             // basic relationnal to keep alphabetical string comparison (v4 change)
             equal:     function(a, b) { return a == b },

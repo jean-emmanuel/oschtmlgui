@@ -74,7 +74,12 @@ module.exports = class Multipush extends _matrix_base {
                 data.preArgs = '@{parent.preArgs}'
             }
 
-            var push = parser.parse([data], this.widget, this)
+            var push = parser.parse({
+                data: data,
+                parentNode: this.widget,
+                parent: this
+            })
+
             push.container.classList.add('not-editable')
 
             this.value[i-this.start] = this.getProp('off')

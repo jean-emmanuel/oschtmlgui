@@ -50,7 +50,24 @@ class Panel extends Container {
 
             this.wrapper = this.widget.appendChild(DOM.create('<div class="tabs-wrapper"></div>'))
 
-            parser.parse(this.getProp('tabs'), this.wrapper, this, true)
+            this.children = options.children || new Array(this.getProp('tabs').length)
+            for (let i = 0; i < this.children.length; i++) {
+                if (this.children[i]) {
+                    this.wrapper.appendChild(this.children[i].container)
+                    this.children[i].parent = this
+                    this.children[i].parentNode = this.wrapper
+                    this.children[i].props = this.getProp('tabs')[i]
+                } else {
+                    parser.parse({
+                        data: this.getProp('tabs')[i],
+                        parentNode: this.wrapper,
+                        parent: this,
+                        tab: true,
+                        index: i
+                    })
+                }
+            }
+
             this.createNavigation()
 
             this.navigation.addEventListener('fast-click', (e)=>{
@@ -68,7 +85,22 @@ class Panel extends Container {
 
         } else if (this.getProp('widgets') && this.getProp('widgets').length) {
 
-            parser.parse(this.getProp('widgets'), this.widget, this)
+            this.children = options.children || new Array(this.getProp('widgets').length)
+            for (let i = 0; i < this.children.length; i++) {
+                if (this.children[i]) {
+                    this.widget.appendChild(this.children[i].container)
+                    this.children[i].parent = this
+                    this.children[i].parentNode = this.widget
+                    this.children[i].props = this.getProp('widgets')[i]
+                } else {
+                    parser.parse({
+                        data: this.getProp('widgets')[i],
+                        parentNode: this.widget,
+                        parent: this,
+                        index: i
+                    })
+                }
+            }
 
         }
 

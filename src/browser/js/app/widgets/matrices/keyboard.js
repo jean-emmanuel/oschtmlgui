@@ -77,7 +77,12 @@ module.exports = class Keyboard extends _matrix_base {
                 data.preArgs = '@{parent.preArgs}'
             }
 
-            var key = parser.parse([data], this.widget, this)
+            var key = parser.parse({
+                data: data,
+                parentNode: this.widget,
+                parent: this
+            })
+            
             key.container.classList.add('not-editable')
 
             if (pattern[i % 12] == 'w') {

@@ -41,7 +41,7 @@ class Clone extends Container {
         if (this.cloneTarget) this.createClone()
 
         // global listenner to catch cloneTarget's creation if no target is locked
-        widgetManager.on(`widget-created.${this.hash}`, (e)=>{
+        widgetManager.on('widget-created', (e)=>{
 
             if (this.cloneTarget === null) {
 
@@ -57,7 +57,7 @@ class Clone extends Container {
 
             }
 
-        })
+        }, {context: this})
 
     }
 
@@ -113,8 +113,7 @@ class Clone extends Container {
         //console.log('clear clone',this.getProp('id'))
 
         // unregister cloned content
-        widgetManager.removeWidgets(this.children)
-        this.children = []
+        widgetManager.removeWidgets(this.getAllChildren())
 
         // clean inner html
         this.widget.innerHTML = ''
@@ -124,8 +123,7 @@ class Clone extends Container {
 
         // clear event listeners on target
         if (this.cloneTarget) {
-            this.cloneTarget.off(`widget-removed.${this.hash}`)
-            this.cloneTarget.off(`widget-created.${this.hash}`)
+            this.cloneTarget.removeEventContext(this)
         }
 
     }
@@ -146,10 +144,13 @@ class Clone extends Container {
         this.container.classList.remove('empty')
         this.container.classList.add(...this.cloneClass)
         let clonedProps = deepCopy(this.cloneTarget.props)
-        var clone = parser.parse([{...clonedProps, ...this.getProp('props')}], this.widget, this)
-
+        var clone = parser.parse({
+            data: {...clonedProps, ...this.getProp('props')},
+            parentNode: this.widget,
+            parent: this
+        })
         if (clone.getProp('id') === this.cloneTarget.getProp('id')) {
-            widgetManager.trigger('change.*', [{
+            widgetManager.trigger('change', [{
                 widget: this.cloneTarget,
                 id: this.cloneTarget.getProp('id'),
                 linkId: this.cloneTarget.getProp('linkId'),
@@ -157,10 +158,8 @@ class Clone extends Container {
             }])
         }
 
-
-
-        for (var i = 0; i < this.children.length; i++) {
-            this.children[i].container.classList.add('not-editable')
+        for (var w of this.getAllChildren()) {
+            w.container.classList.add('not-editable')
         }
 
         DOM.each(this.widget, '.widget', (el)=>{el.classList.add('not-editable')})
@@ -205,15 +204,15 @@ class Clone extends Container {
 
         // listen for cloneTarget's deletion
         // if it is just edited, its recreation will be catched by the global 'widget-created' event handler
-        this.cloneTarget.on(`widget-removed.${this.hash}`, (e)=>{
+        this.cloneTarget.on('widget-removed', (e)=>{
             if (this.cloneTarget === e.widget) {
                 this.cloneTarget = null
                 this.cleanClone()
             }
-        })
+        }, {context: this})
 
         // listen for cloneTarget's content updates
-        this.cloneTarget.on(`widget-created.${this.hash}`, (e)=>{
+        this.cloneTarget.on('widget-created', (e)=>{
 
             var {widget} = e,
                 parent = widget.parent
@@ -222,14 +221,14 @@ class Clone extends Container {
                 // if updated widget is in a nested clone, ignore it:
                 // it will be handled by the nested clone that targets it
                 if (parent.getProp('type') === 'clone') return
-                parent = widget.parent
+                parent = parent.parent
             }
 
             this.createClone()
             resize.check(this.container)
 
-        })
-        }
+        }, {context: this})
+
         this.cloneLock = false
 
     }
@@ -277,8 +276,7 @@ class Clone extends Container {
     onRemove(){
 
         if (this.cloneTarget) {
-            this.cloneTarget.off(`widget-removed.${this.hash}`)
-            this.cloneTarget.off(`widget-created.${this.hash}`)
+            this.cloneTarget.removeEventContext(this)
         }
 
         super.onRemove()

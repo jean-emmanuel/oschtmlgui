@@ -39,6 +39,7 @@ class Matrix extends _matrix_base {
 
             for (var i = this.start; i < this.getProp('matrix')[0] * this.getProp('matrix')[1] + this.start; i++) {
 
+                var props = this.resolveProp('props', undefined, false, false, false, {'$':i})
                 var data = {
                     type: this.getProp('widgetType'),
                     id: this.getProp('id') + '/' + i,
@@ -46,11 +47,17 @@ class Matrix extends _matrix_base {
                     top: 'auto',
                     left: 'auto',
                     height: 'auto',
-                    width: 'auto',
-                    ...this.resolveProp('props', undefined, false, false, false, {'$':i})
+                    width: 'auto'
+                }
+                if (typeof props === 'object' && props !== null) {
+                    Object.assign(data, props)
                 }
 
-                var widget = parser.parse([data], this.widget, this)
+                var widget = parser.parse({
+                    data: data,
+                    parentNode: this.widget,
+                    parent: this
+                })
 
                 widget.container.classList.add('not-editable')
 
@@ -74,22 +81,18 @@ class Matrix extends _matrix_base {
 
             case 'props':
 
-                var children = [...this.children]
 
-                for (let i = children.length - 1; i >= 0; i--) {
+                for (let i = this.children.length - 1; i >= 0; i--) {
 
-                    let widget = children[i],
-                        data = this.resolveProp('props', undefined, false, false, false, {'$':i})
+                    let data = this.resolveProp('props', undefined, false, false, false, {'$':i})
 
-                    Object.assign(widget.props, data)
-                    widget.updateProps(Object.keys(data), this)
+                    if (typeof data === 'object' && data !== null) {
+                        Object.assign(this.children[i].props, data)
+                    }
+                    this.children[i].updateProps(Object.keys(data), this)
+                    // this.children[i] might have been recreated
+                    this.children[i].container.classList.add('not-editable')
 
-                }
-
-
-                for (let i = this.children - 1; i >= 0; i--) {
-                    let widget = children[i]
-                    widget.container.classList.add('not-editable')
                 }
 
                 return

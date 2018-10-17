@@ -11,6 +11,7 @@ module.exports = class EventEmitter extends WolfyEventEmitter {
         super()
 
         this._customBindings = {}
+        this._contextEvents = {}
 
         for (var evt in customEvents) {
             this._customBindings[evt] = {
@@ -34,46 +35,25 @@ module.exports = class EventEmitter extends WolfyEventEmitter {
 
     }
 
-    getListeners(evt) {
-
-        if (!(evt instanceof RegExp) && evt.indexOf('.*') > -1) {
-
-            var events = this._getEvents(),
-                evtName = evt.substr(0, evt.indexOf('.')),
-                evtNameCheck = evtName + '.',
-                response = {}
-
-            for (var key in events) {
-                if (key === evtName || key.indexOf(evtNameCheck) > -1) {
-                    response[key] = events[key]
-                }
-            }
-
-            return response
-
-        } else {
-
-            return super.getListeners(evt)
-
-        }
-
-    }
-
     addListener(evt, listener, options) {
 
         // Custom event setup
 
-        var eventName = typeof evt == 'string' ? evt.split('.')[0] : ''
-
         if (
-            customEvents.hasOwnProperty(eventName) &&
-            typeof customEvents[eventName].setup === 'function'
+            customEvents.hasOwnProperty(evt) &&
+            typeof customEvents[evt].setup === 'function'
         ) {
-            if (this._customBindings[eventName].bindings === 0) {
-                this._customBindings[eventName].options = options
-                customEvents[eventName].setup.call(this, options)
+            if (this._customBindings[evt].bindings === 0) {
+                this._customBindings[evt].options = options
+                customEvents[evt].setup.call(this, options)
             }
-            this._customBindings[eventName].bindings += 1
+            this._customBindings[evt].bindings += 1
+        }
+
+        if (options && options.context) {
+            var hash = options.context.hash
+            if (!this._contextEvents[hash]) this._contextEvents[hash] = []
+            this._contextEvents[hash].push([evt, listener])
         }
 
         super.addListener(evt, listener)
@@ -86,17 +66,15 @@ module.exports = class EventEmitter extends WolfyEventEmitter {
 
         // Custom event teardown
 
-        var eventName = typeof evt == 'string' ? evt.split('.')[0] : ''
-
         if (
-            customEvents.hasOwnProperty(eventName) &&
-            typeof customEvents[eventName].teardown === 'function' &&
-            this._customBindings[eventName].bindings !== 0
+            customEvents.hasOwnProperty(evt) &&
+            typeof customEvents[evt].teardown === 'function' &&
+            this._customBindings[evt].bindings !== 0
         ) {
-            this._customBindings[eventName].bindings -= 1
-            if (this._customBindings[eventName].bindings === 0 || !listener) {
-                var options = this._customBindings[eventName].options
-                customEvents[eventName].teardown.call(this, options)
+            this._customBindings[evt].bindings -= 1
+            if (this._customBindings[evt].bindings === 0 || !listener) {
+                var options = this._customBindings[evt].options
+                customEvents[evt].teardown.call(this, options)
             }
         }
 
@@ -114,6 +92,18 @@ module.exports = class EventEmitter extends WolfyEventEmitter {
 
         return this
 
+    }
+
+    removeEventContext(context) {
+
+        var events = this._contextEvents[context.hash]
+
+        if (events) {
+            for (var i = 0; i < events.length; i++) {
+                this.removeListener(events[i][0], events[i][1])
+            }
+            delete this._contextEvents[context.hash]
+        }
 
     }
 

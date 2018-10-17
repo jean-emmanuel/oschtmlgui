@@ -95,7 +95,12 @@ module.exports = class Fader extends Slider {
                 pips:false,
                 dashed:true
             }
-            var meter = parser.parse([data],this.wrapper, this)
+            var meter = parser.parse({
+                data: data,
+                parentNode: this.wrapper,
+                parent: this
+            })
+
             meter.container.classList.add('not-editable')
 
             this.widget.classList.add('has-meter')

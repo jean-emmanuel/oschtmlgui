@@ -8,6 +8,7 @@ var WidgetManager = class WidgetManager extends EventEmitter {
         super()
 
         this.widgets = {}
+        this.children = []
 
         this.addressRoute = {}
         this.idRoute = {}
@@ -174,7 +175,7 @@ var WidgetManager = class WidgetManager extends EventEmitter {
                 hash:hash
             })
 
-            widget.trigger('widget-removed.*', [{widget: widget}])
+            widget.trigger('widget-removed', [{widget: widget}])
 
         }
         if (id && this.idRoute[id].indexOf(hash) != -1) this.idRoute[id].splice(this.idRoute[id].indexOf(hash), 1)
@@ -188,19 +189,23 @@ var WidgetManager = class WidgetManager extends EventEmitter {
 
     }
 
-    removeWidgets(widgets) {
+    removeWidgets(widgets, nested) {
 
         for (let i in widgets) {
 
-            if (
-                this.widgets[widgets[i].hash]
-            ) {
+            if (Array.isArray(widgets[i])) {
+
+                this.removeWidgets(widgets[i], true)
+
+            } else if (this.widgets[widgets[i].hash]) {
+
                 this.removeWidget(widgets[i])
+
             }
 
         }
 
-        this.purge()
+        if (!nested) this.purge()
 
     }
 
