@@ -162,7 +162,7 @@ class Clone extends Container {
             w.container.classList.add('not-editable')
         }
 
-        DOM.each(this.widget, '.widget', (el)=>{el.classList.add('not-editable')})
+
 
         // will react to any widget deletion
         // widget-removed are only triggered from the manager from now
@@ -199,7 +199,7 @@ class Clone extends Container {
             //     const wasChild = this.cloneTarget!==widget
 
 
-            //     }
+                // }
 
 
         // listen for cloneTarget's deletion
@@ -228,6 +228,7 @@ class Clone extends Container {
             resize.check(this.container)
 
         }, {context: this})
+    }
 
         this.cloneLock = false
 

@@ -138,7 +138,7 @@ module.exports = class Fader extends Slider {
     draginitHandle(e) {
 
         super.draginitHandle(...arguments)
-        if(Date.now()-this.lastDoubleTap>DOUBLE_TAP_TIME){
+        
             this.percent = clip(this.percent,[0,100])
 
             if (!(e.traversing || this.getProp('snap'))  || e.ctrlKey) return
@@ -150,7 +150,7 @@ module.exports = class Fader extends Slider {
             // this.percent = clip(this.percent,[0,100])
 
             this.setValue(this.percentToValue(this.percent), {send:true,sync:true,dragged:true})
-        }
+        
     }
 
     dragHandle(e, data) {

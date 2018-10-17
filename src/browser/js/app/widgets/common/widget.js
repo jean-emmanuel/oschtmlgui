@@ -490,48 +490,7 @@ class Widget extends EventEmitter {
                 propValue = propValue.replace(new RegExp(k, 'g'), v)
             }
 
-            // support object unfolding
-            let unfoldIdx = propValue.indexOf("...")
-            while(unfoldIdx>=0){
-                propValue=propValue.slice(0,unfoldIdx)+ propValue.slice(unfoldIdx+3);
-                
-                let startIdx = -1
-                ,endIdx = -1
-                ,nest = 0
-                ,isEmpty = true
-                while(unfoldIdx<propValue.length){
-                    const c = propValue[unfoldIdx]
-                    if(c==='}'){nest-=1}
-                    if(nest===0 && startIdx>0){
-                        endIdx=unfoldIdx
-                        break
-                    }
-                    if(nest>0 && isEmpty && c!==' '){
-                        isEmpty=false
-                    }
-                    if(c==='{'){if(nest===0){startIdx =unfoldIdx} nest+=1}
-
-                    unfoldIdx++
-                }
-
-                if(endIdx>0 && startIdx>0){
-                    // delete trailing comma if empty
-                    let tail = 0
-                    if(isEmpty){
-                        const nextComma = propValue.indexOf(",",endIdx)
-                        if(nextComma>=0){
-                            tail = nextComma-endIdx
-                        }
-                    }
-                    
-                    propValue = propValue.slice(0,startIdx)+ propValue.slice(startIdx+1);
-                    propValue = propValue.slice(0,endIdx-1)+ propValue.slice(endIdx+tail);
-                    
-                }
-
-                unfoldIdx = propValue.indexOf("...")
-            }
-
+           
             try {
                 propValue = JSON.parse(propValue)
             } catch (err) {}
