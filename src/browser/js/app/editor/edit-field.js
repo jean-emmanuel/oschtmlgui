@@ -102,7 +102,7 @@ module.exports = function editField(editor, widget, propName, defaultValue){
             for (var w of editor.selectedWidgets) {
                 const targetV = v !== '' ? v : deepCopy(defaultValue.value)
                 if(dynamic){
-                    w.setProp(propName, targetV)
+                    w.setProp(propName, targetV,{fromEditor:true})
                     newWidgets.push(w)
                 }
                 else{

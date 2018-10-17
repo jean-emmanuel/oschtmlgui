@@ -655,9 +655,9 @@ var Editor = class Editor {
         if (!this.selectedWidgets.length) return
 
         var newWidgets = []
-
+        
         for (var i = 0; i < this.selectedWidgets.length; i++) {
-
+            w.startPropChangeSet('resize',{fromEditor:true})
             let w = this.selectedWidgets[i],
                 nW, nH
 
@@ -675,7 +675,7 @@ var Editor = class Editor {
                 if (typeof w.props.width === 'string' && w.props.width.indexOf('%') > -1) {
                     newWidth = (100 * PXSCALE * newWidth / w.container.parentNode.offsetWidth).toFixed(2) + '%'
                 }
-                w.setProp('width',newWidth,'resize')
+                w.setProp('width',newWidth)
 
             }
 
@@ -684,9 +684,9 @@ var Editor = class Editor {
                 if (typeof w.props.height === 'string' && w.props.height.indexOf('%') > -1) {
                     newHeight = (100 * PXSCALE * newHeight / w.container.parentNode.offsetHeight).toFixed(2) + '%'
                 }
-                w.setProp('height',newHeight,'resize')
+                w.setProp('height',newHeight)
             }
-            w.applyPropChanges('resize')
+            w.applyPropChangeSet()//'resize'
 
             if (w.props.width !== undefined || w.props.height !== undefined) 
                 newWidgets.push(w)
@@ -704,23 +704,25 @@ var Editor = class Editor {
         if (!this.selectedWidgets.length) return
 
         var newWidgets = []
-
+        
         for (var w of this.selectedWidgets) {
 
+            w.startPropChangeSet('move',{fromEditor:true})
+            
             var newTop = w.container.offsetTop / PXSCALE + deltaY
             if (typeof w.props.top === 'string' && w.props.top.indexOf('%') > -1) {
-                w.setProp('top',(100 * PXSCALE * newTop / w.container.parentNode.offsetHeight).toFixed(2) + '%','move')
-            } else {
-                w.setProp('top', newTop,'move')
-            }
+                newtop = (100 * PXSCALE * newTop / w.container.parentNode.offsetHeight).toFixed(2) + '%'
+            } 
+            w.setProp('top', newTop)
+            
             var newLeft = w.container.offsetLeft / PXSCALE + deltaX
             if (typeof w.props.left === 'string' && w.props.left.indexOf('%') > -1) {
-                w.setProp('left', (100 * PXSCALE * newLeft / w.container.parentNode.offsetWidth).toFixed(2) + '%','move')
-            } else {
-                w.setProp('left', newLeft,'move')
+                newLeft =  (100 * PXSCALE * newLeft / w.container.parentNode.offsetWidth).toFixed(2) + '%'
             }
+            w.setProp('left', newLeft)
+            
 
-            w.applyPropChanges('move')
+            w.applyPropChangeSet()//'move'
 
             newWidgets.push(w)
 

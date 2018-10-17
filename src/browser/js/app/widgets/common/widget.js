@@ -509,32 +509,41 @@ class Widget extends EventEmitter {
     getProp(propName) {
         return this.cachedProps[propName]
     }
-    setProp(propName,propValue,changedSetName) {
-        // otions = {alreadyResolved,changeSetName}
-        // const {changedSetName = options
+    
+    startPropChangeSet(name,options){
+        this.changedSetName = name
+        this.changedSetOptions = options || {}
+    }
+    
+    setProp(propName,propValue,options) {
+        
         const oldPropValue = this.getProp(propName)
         const changed = propValue!=oldPropValue
         if(!changed){return }
 
         const changeInfo = {propName,oldPropValue,propValue}
+
+        const changedSetName= this.changedSetName
         if(changedSetName){
             if (!this.changedPropSet[changedSetName])this.changedPropSet[changedSetName] =[]
             this.changedPropSet[changedSetName].push(changeInfo)
         }
         
         else{
-            const chOptions = {}
-            this._notifyChangedProps([changeInfo],chOptions)
-
+            this._notifyChangedProps([changeInfo],options)
         }
     }
 
-    applyPropChanges(changedSetName,options){
+    applyPropChangeSet(options){
+        
+        const changedSetName = this.changedSetName
         const changedProps = this.changedPropSet[changedSetName]
         if (changedProps){
-            this._notifyChangedProps(this.changedPropSet[changedSetName],options)
+            const mergedOptions = {...(this.changedSetOptions || {}) , ...(options || {})}
+            this._notifyChangedProps(this.changedPropSet[changedSetName],mergedOptions)
             delete this.changedPropSet[changedSetName] 
         }
+        this.changedSetOptions = {}
     }
 
     updateProps(propNames, widget, options, updatedProps = []) {

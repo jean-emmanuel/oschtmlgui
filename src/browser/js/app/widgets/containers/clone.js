@@ -6,7 +6,7 @@ var Container = require('../common/container'),
 
 var excludedCloneClasses =  ['widget', 'absolute-position', 'ui-resizable', 'ui-draggable', 'not-editable']
 
-class Clone extends Container {
+class Clone extends Container  {
 
     static defaults() {
 
@@ -170,13 +170,16 @@ class Clone extends Container {
         if(this.cloneTarget){
             this.cloneTarget.on(`prop-changed`,(e)=>{
                 let {id, props,widget, options} = e;
+                if(options.fromEditor){
                 const equivalentObj = this.findClonedFromWidget(widget)
                 if(equivalentObj){
+                    equivalentObj.startPropChangeSet('cloneChange')
                     for(var p of props){
-                        equivalentObj.setProp(p.propName,widget.getProp(p.propName),'cloneChange')
+                        equivalentObj.setProp(p.propName,widget.props[p.propName])
                     }
-                    equivalentObj.applyPropChanges('cloneChange')
+                    equivalentObj.applyPropChangeSet('cloneChange')
                 }
+            }
             })
 
             // this.cloneTarget.on(`widget-removed.${this.hash}`, (e)=>{

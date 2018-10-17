@@ -151,6 +151,37 @@ function updateWidget(widget, options={}) {
 }
 
 
+function nonDynamicPropChanged(changedObj){
+    for(var k of changedObj.changedProps){
+        if(!changedObj.widget.constructor.dynamicProps.includes(k.propName)){
+            return true
+        }
+    }
+    for(var o of changedObj.childrens){
+        if(nonDynamicPropChanged(o)){return true}
+
+    }
+}
+
+function getChangedProps(widget){
+    const res = {widget,'changedProps':[],'childrens':[]}
+    for(var k in widget.cachedProps){
+        const p = widget.cachedProps[k]
+        const np = widget.resolveProp(k, undefined, false)
+        if(!deepEqual(np,p)){
+            res.changedProps.push({'propName':k,'oldPropValue':p})
+        }
+    }
+
+    for( var c in widget.childrens){
+        res.childrens.push(getChangedProps(widget.children[c]))
+    }
+
+    return res;
+
+}
+
+
 var fakeStore = {}
 
 var incrementWidget = function(data, root){
