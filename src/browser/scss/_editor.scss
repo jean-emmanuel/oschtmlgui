@@ -505,6 +505,10 @@
         cursor: auto;
         ::selection{/* reset */}
     }
+    .pre {
+        white-space: pre;
+        vertical-align: text-top;
+    }
     .help {
         margin-top: 10rem;
     }

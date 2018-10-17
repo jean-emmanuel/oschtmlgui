@@ -6,6 +6,7 @@
   - `@{parent}` calls not working consistently in clone widgets
   - `slider/pads`: inteverted ranges not working
   - fix `doubleTap` for sliders with `snap` set to `true`
+  - undo/redo errors
 - editor
   - major performance improvements (containers' children are reused whenever possible instead of being recreated)
   - removed widget deletion confirmation popup
@@ -22,6 +23,7 @@
 - formulas
   - added `extend(x, y)` function for merging two objects
   - objects' closing brackets (`}`) don't need to be escaped with a backslash anymore
+  - show property's computed value in the help popup
 
 ## 0.37.4
 

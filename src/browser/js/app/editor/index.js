@@ -2,7 +2,7 @@ var {widgets} = require('../widgets/'),
     editField = require('./edit-field'),
     {updateWidget, incrementWidget} = require('./data-workers'),
     keyboardJS = require('keyboardjs'),
-    diff = require('deep-diff'),
+    diff = require('jsondiffpatch'),
     widgetManager = require('../managers/widgets'),
     {deepCopy} = require('../utils'),
     macOs = (navigator.platform || '').match('Mac'),
@@ -121,13 +121,14 @@ var Editor = class Editor {
                 this.moveWidget(deltaX, deltaY)
             })
             keyboardJS.bind('mod + shift + a', (e)=>{
+                if (!this.selectedWidgets.length) return
                 if (e.target.classList.contains('no-keybinding')) return
                 this.unselect()
                 this.selectedWidgets = []
             })
             keyboardJS.bind('mod + a', (e)=>{
-                if (e.target.classList.contains('no-keybinding')) return
                 if (!this.selectedWidgets.length) return
+                if (e.target.classList.contains('no-keybinding')) return
 
                 var curWidget = this.selectedWidgets[0],
                     toSelect
@@ -136,19 +137,23 @@ var Editor = class Editor {
                 }
             })
             keyboardJS.bind(['mod + up','mod + down','mod + left' , 'mod + right'], (e)=>{
-                if (e.target.classList.contains('no-keybinding')) return
+
                 if (!this.selectedWidgets.length) return
+                if (e.target.classList.contains('no-keybinding')) return
 
-                const curWidget = this.selectedWidgets[0]
-                let toSelect = null
-                if(e.key == 'ArrowUp' && curWidget.parent!==widgetManager){
+                var curWidget = this.selectedWidgets[0],
+                    toSelect = null
+
+                if (e.key === 'ArrowUp' && curWidget.parent !== widgetManager) {
+
                     toSelect = curWidget.parent
-                }
-                else if(e.key == 'ArrowDown' ){
-                    const toSelectList = curWidget.children
 
-                    if(toSelectList && toSelectList.length){
-                        toSelectList.sort((a,b)=>a.container.offsetLeft>b.container.offsetLeft)
+                } else if (e.key === 'ArrowDown') {
+
+                    var toSelectList = [...curWidget.parent.children]
+
+                    if (toSelectList && toSelectList.length) {
+                        toSelectList.sort((a,b) => a.container.offsetLeft>b.container.offsetLeft)
                         toSelect = toSelectList[0]
                         if (toSelect.container.classList.contains('not-editable')) {
                             toSelect = null
@@ -158,12 +163,12 @@ var Editor = class Editor {
                 }
                 else if((e.key == 'ArrowLeft') || (e.key == 'ArrowRight')){
                     if (curWidget.parent === widgetManager) return
-                    const toSelectList = curWidget.parent.children
-                    if(toSelectList && toSelectList.length){
-                        toSelectList.sort((a,b)=>a.container.offsetLeft>b.container.offsetLeft)
-                        const idx = toSelectList.indexOf(curWidget)
-                        if(idx>=0){
-                            const nextIdx = (idx + (e.key == 'ArrowLeft'?-1:1)+toSelectList.length) % toSelectList.length
+                    var toSelectList = [...curWidget.parent.children]
+                    if (toSelectList && toSelectList.length) {
+                        toSelectList.sort((a,b) => a.container.offsetLeft > b.container.offsetLeft)
+                        var idx = toSelectList.indexOf(curWidget)
+                        if (idx >= 0) {
+                            var nextIdx = (idx + (e.key === 'ArrowLeft' ? -1 : 1 ) + toSelectList.length) % toSelectList.length
                             toSelect = toSelectList[nextIdx]
                         }
                     }
@@ -746,9 +751,7 @@ var Editor = class Editor {
         var d = diff.diff(this.historySession, sessionManager.session)
 
         if (d) {
-            for (var c of deepCopy(d)) {
-                diff.applyChange(this.historySession, null, c)
-            }
+            diff.patch(this.historySession, deepCopy(d))
             this.history.unshift([deepCopy(d), indexes])
             if (this.history.length > HISTORY_SIZE) this.history.pop()
         }
@@ -771,35 +774,15 @@ var Editor = class Editor {
 
         var [patch, indexes] = this.history[this.historyState],
             d1 = deepCopy(patch),
-            d2 = deepCopy(patch),
-            path
+            d2 = deepCopy(patch)
 
-        for (var i = d1.length - 1; i > -1; i--) {
-            diff.revertChange(this.historySession, true, d1[i])
-            diff.revertChange(sessionManager.session, true, d2[i])
-            if (!path || path.length > d1[i].path.length) path = d1[i].path
-        }
+        diff.unpatch(this.historySession, d1)
+        diff.unpatch(sessionManager.session, d2)
 
-        if (d1.length > 1) {
-            // path intersection
-            var stop, j, k, n
-            for (j = 0; j < path.length; j++) {
-                for (k = 0; k < d1.length; k++) {
-                    if (d1[k].path[j] !== path[j]) {
-                        stop = true
-                        break
-                    }
-                }
-                if (stop) break
-            }
-            n = stop ? j : j - 1
-            path.splice(n, path.length - n)
-        }
-
-        this.updateWidgetByPath(path, indexes ? {
+        this.updateWidgetFromPatch(patch, indexes ? {
             addedIndexes: deepCopy(indexes.removedIndexes),
             removedIndexes: deepCopy(indexes.addedIndexes),
-        } : {})
+        } : undefined)
 
     }
 
@@ -809,71 +792,57 @@ var Editor = class Editor {
 
         var [patch, indexes] = this.history[this.historyState],
             d1 = deepCopy(patch),
-            d2 = deepCopy(patch),
-            path
+            d2 = deepCopy(patch)
 
-        for (var i = 0; i < d1.length; i++) {
-            diff.applyChange(this.historySession, true, d1[i])
-            diff.applyChange(sessionManager.session, true, d2[i])
-            if (!path || path.length > d1[i].path.length) path = d1[i].path
-        }
+        diff.patch(this.historySession, d1)
+        diff.patch(sessionManager.session, d2)
 
-        if (d1.length > 1) {
-            // path intersection
-            var stop, j, k, n
-            for (j = 0; j < path.length; j++) {
-                for (k = 0; k < d1.length; k++) {
-                    if (d1[k].path[j] !== path[j]) {
-                        stop = true
-                        break
-                    }
-                }
-                if (stop) break
-            }
-            n = stop ? j : j - 1
-            path.splice(n, path.length - n)
-        }
-
-
-        this.updateWidgetByPath(path, indexes ? {
+        this.updateWidgetFromPatch(patch, indexes ? {
             addedIndexes: deepCopy(indexes.addedIndexes),
             removedIndexes: deepCopy(indexes.removedIndexes),
-        } : {})
+        } : undefined)
 
         this.historyState -= 1
 
     }
 
-    updateWidgetByPath(path, indexes) {
+    updateWidgetFromPatch(patch, indexes) {
 
-        //TODO traverse widget.children instead of querying the dom
+        // get object path from patch
+        var pointer = patch[0],
+            path = []
 
-        var req = '.root-container'
-        for (var j = 1; j < path.length; j++) {
-            var item = path[j]
-            if (item === 'widgets' && j + 1 < path.length) {
-                req += ' > .panel'
-            } else if (item === 'tabs' && j + 1 < path.length) {
-                req += ' > .panel > .tabs-wrapper'
-            } else if (!isNaN(item)) {
-                req += ' > .widget:nth-child(' + (item + 1) + ')'
-            } else {
+        while(true) {
+
+            var keys = Object.keys(pointer),
+                potentialPointers = keys.filter(x => !isNaN(x) || x === 'tabs' || x === 'widgets')
+
+            if (
+                keys.filter(x => typeof x === 'string' && x.match(/_[0-9]+/)).length ||
+                potentialPointers.length !== 1
+            ) {
                 break
             }
+
+            path.push(potentialPointers[0])
+            pointer = pointer[potentialPointers[0]]
+
         }
 
-        var e = DOM.get(req),
-            w
-
-        if (e.length) {
-            w = widgetManager.getWidgetByElement(e[0])
-            updateWidget(w, indexes)
-        } else {
-            // in case the elements are in a hidden tab (detached dom)
-            w = widgetManager.getWidgetById('root')[0]
-            updateWidget(w, {reuseChildren: false})
+        if (!isNaN(path[path.length - 1]) && !isNaN(path[path.length - 2])) {
+            path.pop()
+            path.pop()
         }
 
+        // get widget from path
+        var widget = widgetManager.getWidgetById('root')[0]
+        pointer = patch[0]
+        for (var i in path) {
+            if (!isNaN(path[i])) widget = widget.children[parseInt(path[i])]
+            pointer = pointer[path[i]]
+        }
+
+        updateWidget(widget, indexes || {reuseChildren: false})
 
     }
 

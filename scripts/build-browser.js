@@ -55,7 +55,7 @@ if (prod) b = b.transform(ignoreWrapper(uglifyify), {global: true})
 
 if (watch) {
     b.on('update', bundle)
-    b.on('log', function(msg) {console.warn(msg)})
+    b.on('log', function(msg) {console.warn('\x1b[36m%s\x1b[0m', msg)})
 }
 
 bundle()
@@ -63,6 +63,7 @@ bundle()
 function bundle() {
 
     var output =  b.bundle()
+    output.on('error', function(err) {console.error(new Error(err))})
 
     if (!fast) output.pipe(exorcist(outputPath + '.map'))
 
