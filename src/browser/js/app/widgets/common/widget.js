@@ -593,7 +593,7 @@ class Widget extends EventEmitter {
             this.onPropChanged(propName, options, oldPropValue)
             }
 
-        this.trigger('prop-changed.*', [{
+        this.trigger('prop-changed', [{
                 id: this.getProp('id'),
                 props: changedProps,
                 widget: this,

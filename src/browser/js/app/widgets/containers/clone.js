@@ -168,7 +168,7 @@ class Clone extends Container {
         // widget-removed are only triggered from the manager from now
         // TODO : we could avoid useless callbacks if widgets were to trigger widget-removed events
         if(this.cloneTarget){
-            this.cloneTarget.on(`prop-changed.${this.hash}`,(e)=>{
+            this.cloneTarget.on(`prop-changed`,(e)=>{
                 let {id, props,widget, options} = e;
                 const equivalentObj = this.findClonedFromWidget(widget)
                 if(equivalentObj){
@@ -242,14 +242,14 @@ class Clone extends Container {
         while(insp && insp.parent!==widgetManager){
             if(insp===this.cloneTarget){break}
             // if(insp.cachedProps.type==="clone" ){return null}
-            address.push(insp.getProp('id'))
+            address.push(insp.props['id']) // use non resolved props
             insp = insp.parent
         }
 
         if(insp===this.cloneTarget){
             insp = this.children[0]
            for(var i  of address){
-            insp = insp.children.find(e=>e.getProp('id')===i)
+            insp = insp.children.find(e=>e.props['id']===i)
             if(!insp)break
            }
            return  insp
