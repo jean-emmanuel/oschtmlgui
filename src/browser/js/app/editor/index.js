@@ -657,10 +657,10 @@ var Editor = class Editor {
         var newWidgets = []
         
         for (var i = 0; i < this.selectedWidgets.length; i++) {
-            w.startPropChangeSet('resize',{fromEditor:true})
+            
             let w = this.selectedWidgets[i],
                 nW, nH
-
+            w.startPropChangeSet('resize',{fromEditor:true})
             if (i === 0 && ui) {
                 nW = ui.originalSize.width + deltaW
                 nH = ui.originalSize.height + deltaH

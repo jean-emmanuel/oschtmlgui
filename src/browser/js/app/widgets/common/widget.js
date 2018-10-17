@@ -516,12 +516,16 @@ class Widget extends EventEmitter {
     }
     
     setProp(propName,propValue,options) {
-        
+        options = options ||{}
         const oldPropValue = this.getProp(propName)
         const changed = propValue!=oldPropValue
         if(!changed){return }
 
-        const changeInfo = {propName,oldPropValue,propValue}
+        const isComputed = options.isComputed || (typeof propValue == 'string' && propValue.includes("@"))
+        let propDefinition=''
+        
+        if(isComputed){propDefinition=propValue}
+        const changeInfo = {propName,oldPropValue,propValue,propDefinition,isComputed,isResolved:options.isResolved}
 
         const changedSetName= this.changedSetName
         if(changedSetName){
@@ -573,7 +577,7 @@ class Widget extends EventEmitter {
                 } else {
 
                     this.cachedProps[propName] = propValue
-                    changedProps.push({propName, oldPropValue,propValue})
+                    changedProps.push({propName, oldPropValue,propValue,propDefinition:this.props[propName],isResolved:true})
 
                 }
 
@@ -594,11 +598,17 @@ class Widget extends EventEmitter {
     }
 
     _notifyChangedProps(changedProps,options={}){
-        const {doResolve} = options
+        
             for (var i in changedProps) {
-            const {propName,propValue,oldPropValue}  = changedProps[i]
-            this.props[propName] = propValue
-            this.cachedProps[propName] = doResolve?this.resolveProp(propName,false):propValue
+            const {propName,propValue,oldPropValue,propDefinition,isComputed,isResolved}  = changedProps[i]
+            if(!isComputed && !propDefinition){
+                this.props[propName] = propValue
+            }
+            else if (propDefinition!==this.props[propName]){
+                this.props[propName] = propDefinition
+            }
+
+            this.cachedProps[propName] = (isComputed && !isResolved)?this.resolveProp(propName,false):propValue
             this.onPropChanged(propName, options, oldPropValue)
             }
 
