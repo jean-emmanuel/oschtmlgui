@@ -2,6 +2,7 @@ var widgetManager = require('../managers/widgets'),
     resize = require('../events/resize'),
     stateManager = require('../managers/state'),
     parser = require('../parser'),
+    {deepCopy, deepEqual} = require('../utils'),
     Panel,
     sidepanel,
     editor
@@ -14,6 +15,37 @@ function updateWidget(widget, options={}) {
 
     var reuseChildren = options.reuseChildren !== false && widget instanceof Panel
 
+    if(!options.forceRecreation ){
+        const changedObj = getChangedProps(widget);
+        if(!nonDynamicPropChanged(changedObj)){
+
+
+            function triggerChange(changedObj){
+                const {widget,childrens,changed} = changedObj
+                for(var i in childrens){
+                    triggerChange(childrens[i])
+                }
+                for(var i in changed){
+                    options ={}
+                    for (var i in changedProps) {
+                        widget.onPropChanged(changedProps[i].propName, options, changedProps[i].oldPropValue)
+                    }
+
+                    widget.trigger('prop-changed.*', [{
+                        id: widget.getProp('id'),
+                        props: changedProps,
+                        widget: widget,
+                        options: options
+                    }])
+
+                }
+            }
+            triggerChange(changedObj)
+            return widget
+        }
+
+
+    }
     // save state
     stateManager.incrementQueue()
     var toSave = [widget],
@@ -75,7 +107,7 @@ function updateWidget(widget, options={}) {
         children: children,
         index: index
     })
-
+ 
 
     newWidget.container.parentNode.replaceChild(newWidget.container, widget.container)
 
@@ -115,6 +147,37 @@ function updateWidget(widget, options={}) {
     }
 
     return newWidget
+
+}
+
+
+function nonDynamicPropChanged(changedObj){
+    for(var k of changedObj.changedProps){
+        if(!changedObj.widget.constructor.dynamicProps.includes(k.propName)){
+            return true
+        }
+    }
+    for(var o of changedObj.childrens){
+        if(nonDynamicPropChanged(o)){return true}
+
+    }
+}
+
+function getChangedProps(widget){
+    const res = {widget,'changedProps':[],'childrens':[]}
+    for(var k in widget.cachedProps){
+        const p = widget.cachedProps[k]
+        const np = widget.resolveProp(k, undefined, false)
+        if(!deepEqual(np,p)){
+            res.changedProps.push({'propName':k,'oldPropValue':p})
+        }
+    }
+
+    for( var c in widget.childrens){
+        res.childrens.push(getChangedProps(widget.children[c]))
+    }
+
+    return res;
 
 }
 

@@ -312,7 +312,11 @@ var Editor = class Editor {
     }
 
     select(widget, options={}){
-
+        if(this.selectedWidgets){
+            for(var o of this.selectedWidgets){
+                o.off('prop-changed.editor')
+            }
+        }
         if (!options.fromLasso) this.unselect()
 
         if (Array.isArray(widget)) {
@@ -577,7 +581,10 @@ var Editor = class Editor {
         data[0].widgets = data[0].widgets || []
         data[0].widgets = data[0].widgets.concat(pastedData)
 
-        var indexes = {addedIndexes: [data[0].widgets.length -1]}
+        var indexes = {addedIndexes: []}
+        for (var i = 0; i < pastedData.length; i++) {
+            indexes.addedIndexes.push(data[0].widgets.length - 1 - i )
+        }
         updateWidget(this.selectedWidgets[0], indexes)
         this.pushHistory(indexes)
 
@@ -648,9 +655,9 @@ var Editor = class Editor {
         if (!this.selectedWidgets.length) return
 
         var newWidgets = []
-
+        
         for (var i = 0; i < this.selectedWidgets.length; i++) {
-
+            w.startPropChangeSet('resize',{fromEditor:true})
             let w = this.selectedWidgets[i],
                 nW, nH
 
@@ -666,22 +673,23 @@ var Editor = class Editor {
             if (w.props.width !== undefined) {
                 var newWidth = Math.max(nW, GRIDWIDTH) / PXSCALE
                 if (typeof w.props.width === 'string' && w.props.width.indexOf('%') > -1) {
-                    w.props.width = (100 * PXSCALE * newWidth / w.container.parentNode.offsetWidth).toFixed(2) + '%'
-                } else {
-                    w.props.width = newWidth
+                    newWidth = (100 * PXSCALE * newWidth / w.container.parentNode.offsetWidth).toFixed(2) + '%'
                 }
+                w.setProp('width',newWidth)
+
             }
 
             if (w.props.height !== undefined) {
                 var newHeight = Math.max(nH, GRIDWIDTH) / PXSCALE
                 if (typeof w.props.height === 'string' && w.props.height.indexOf('%') > -1) {
-                    w.props.height = (100 * PXSCALE * newHeight / w.container.parentNode.offsetHeight).toFixed(2) + '%'
-                } else {
-                    w.props.height = newHeight
+                    newHeight = (100 * PXSCALE * newHeight / w.container.parentNode.offsetHeight).toFixed(2) + '%'
                 }
+                w.setProp('height',newHeight)
             }
+            w.applyPropChangeSet()//'resize'
 
-            if (w.props.width !== undefined || w.props.height !== undefined) newWidgets.push(updateWidget(w, {preventSelect: this.selectedWidgets.length > 1}))
+            if (w.props.width !== undefined || w.props.height !== undefined) 
+                newWidgets.push(w)
 
         }
 
@@ -696,29 +704,33 @@ var Editor = class Editor {
         if (!this.selectedWidgets.length) return
 
         var newWidgets = []
-
+        
         for (var w of this.selectedWidgets) {
 
+            w.startPropChangeSet('move',{fromEditor:true})
+            
             var newTop = w.container.offsetTop / PXSCALE + deltaY
             if (typeof w.props.top === 'string' && w.props.top.indexOf('%') > -1) {
-                w.props.top = (100 * PXSCALE * newTop / w.container.parentNode.offsetHeight).toFixed(2) + '%'
-            } else {
-                w.props.top = newTop
-            }
+                newtop = (100 * PXSCALE * newTop / w.container.parentNode.offsetHeight).toFixed(2) + '%'
+            } 
+            w.setProp('top', newTop)
+            
             var newLeft = w.container.offsetLeft / PXSCALE + deltaX
             if (typeof w.props.left === 'string' && w.props.left.indexOf('%') > -1) {
-                w.props.left = (100 * PXSCALE * newLeft / w.container.parentNode.offsetWidth).toFixed(2) + '%'
-            } else {
-                w.props.left = newLeft
+                newLeft =  (100 * PXSCALE * newLeft / w.container.parentNode.offsetWidth).toFixed(2) + '%'
             }
+            w.setProp('left', newLeft)
+            
 
-            newWidgets.push(updateWidget(w, {preventSelect: this.selectedWidgets.length > 1}))
+            w.applyPropChangeSet()//'move'
+
+            newWidgets.push(w)
 
         }
 
         this.pushHistory()
 
-        if (newWidgets.length > 1) this.select(newWidgets)
+        // if (newWidgets.length > 1) this.select(newWidgets)
 
     }
 

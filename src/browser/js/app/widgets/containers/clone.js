@@ -6,7 +6,7 @@ var Container = require('../common/container'),
 
 var excludedCloneClasses =  ['widget', 'absolute-position', 'ui-resizable', 'ui-draggable', 'not-editable']
 
-class Clone extends Container {
+class Clone extends Container  {
 
     static defaults() {
 
@@ -162,6 +162,49 @@ class Clone extends Container {
             w.container.classList.add('not-editable')
         }
 
+
+
+        // will react to any widget deletion
+        // widget-removed are only triggered from the manager from now
+        // TODO : we could avoid useless callbacks if widgets were to trigger widget-removed events
+        if(this.cloneTarget){
+            this.cloneTarget.on(`prop-changed`,(e)=>{
+                let {id, props,widget, options} = e;
+                if(options.fromEditor){
+                const equivalentObj = this.findClonedFromWidget(widget)
+                if(equivalentObj){
+                    equivalentObj.startPropChangeSet('cloneChange')
+                    for(var p of props){
+                        equivalentObj.setProp(p.propName,widget.props[p.propName])
+                    }
+                    equivalentObj.applyPropChangeSet('cloneChange')
+                }
+            }
+            })
+
+            // this.cloneTarget.on(`widget-removed.${this.hash}`, (e)=>{
+            //     var { widget} = e
+            //     // a clone should not react on its target's nested clones widgets
+            //     // this mechanism is handled by the inner clones
+            //     function containsNonCloned(self,wi){
+            //         let insp = wi.parent;
+            //         while(insp && insp.parent!==widgetManager){
+            //             if(insp===self){return true}
+            //             if(insp.cachedProps.type==="clone"){return false}
+            //             insp = insp.parent
+            //         }
+            //         return false
+            //     }
+            //     if(this.cloneTarget && (this.cloneTarget===widget || containsNonCloned(this.cloneTarget,widget))){
+            //     this.cloneTarget.off(`widget-removed.${this.hash}`)
+            //     this.cleanClone()
+            //     this.cloneTarget = null
+            //     const wasChild = this.cloneTarget!==widget
+
+
+                // }
+
+
         // listen for cloneTarget's deletion
         // if it is just edited, its recreation will be catched by the global 'widget-created' event handler
         this.cloneTarget.on('widget-removed', (e)=>{
@@ -188,11 +231,35 @@ class Clone extends Container {
             resize.check(this.container)
 
         }, {context: this})
+    }
 
         this.cloneLock = false
 
     }
+    findClonedFromWidget(widget){
+        if(!this.cloneTarget)return 
 
+        if(widget===this.cloneTarget){return this.cloneTarget}
+        let insp = widget;
+        let address = []
+        while(insp && insp.parent!==widgetManager){
+            if(insp===this.cloneTarget){break}
+            // if(insp.cachedProps.type==="clone" ){return null}
+            address.push(insp.props['id']) // use non resolved props
+            insp = insp.parent
+        }
+
+        if(insp===this.cloneTarget){
+            insp = this.children[0]
+           for(var i  of address){
+            insp = insp.children.find(e=>e.props['id']===i)
+            if(!insp)break
+           }
+           return  insp
+        }
+        
+
+    }
     onPropChanged(propName, options, oldPropValue) {
 
         if (super.onPropChanged(...arguments)) return true

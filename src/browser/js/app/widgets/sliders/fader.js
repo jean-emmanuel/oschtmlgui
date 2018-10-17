@@ -59,7 +59,6 @@ module.exports = class Fader extends Slider {
         this.widget.classList.add('fader')
         this.margin = 22
 
-
         if (this.getProp('horizontal')) {
             this.widget.classList.add('horizontal')
             this.container.classList.add('horizontal')
@@ -139,19 +138,19 @@ module.exports = class Fader extends Slider {
     draginitHandle(e) {
 
         super.draginitHandle(...arguments)
+        
+            this.percent = clip(this.percent,[0,100])
 
-        this.percent = clip(this.percent,[0,100])
+            if (!(e.traversing || this.getProp('snap'))  || e.ctrlKey) return
 
-        if (!(e.traversing || this.getProp('snap'))  || e.ctrlKey) return
+            this.percent = this.getProp('horizontal')?
+                (e.offsetX - this.margin * PXSCALE) / (this.width - (this.margin * PXSCALE * 2)) * 100:
+                (this.height - e.offsetY - this.margin * PXSCALE) / (this.height - (this.margin * PXSCALE * 2)) * 100
 
-        this.percent = this.getProp('horizontal')?
-            (e.offsetX - this.margin * PXSCALE) / (this.width - (this.margin * PXSCALE * 2)) * 100:
-            (this.height - e.offsetY - this.margin * PXSCALE) / (this.height - (this.margin * PXSCALE * 2)) * 100
+            // this.percent = clip(this.percent,[0,100])
 
-        // this.percent = clip(this.percent,[0,100])
-
-        this.setValue(this.percentToValue(this.percent), {send:true,sync:true,dragged:true})
-
+            this.setValue(this.percentToValue(this.percent), {send:true,sync:true,dragged:true})
+        
     }
 
     dragHandle(e, data) {
