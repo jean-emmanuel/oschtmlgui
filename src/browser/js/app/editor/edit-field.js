@@ -108,7 +108,7 @@ module.exports = function editField(editor, widget, propName, defaultValue) {
                 else{
 
                     w.props[propName] = targetV
-                    newWidgets.push(updateWidget(w, {preventSelect: editor.selectedWidgets.length > 1}))
+                    newWidgets.push(updateWidget(w, {forceRecreation:true,preventSelect: editor.selectedWidgets.length > 1}))
                 }
             }
             editor.pushHistory()
