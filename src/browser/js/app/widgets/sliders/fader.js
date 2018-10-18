@@ -103,7 +103,7 @@ module.exports = class Fader extends Slider {
             })
 
             meter.container.classList.add('not-editable')
-
+            this.children.push(meter)
             this.widget.classList.add('has-meter')
         }
 
