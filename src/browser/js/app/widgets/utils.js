@@ -96,8 +96,7 @@ module.exports = {
             smaller:   function(a, b) { return a < b },
             larger:    function(a, b) { return a > b },
             smallerEq: function(a, b) { return a <= b },
-            largerEq:  function(a, b) { return a >= b },
-            expand:  function(a, b)   { return {...a,...b} }
+            largerEq:  function(a, b) { return a >= b }
         }, {override:true})
 
         // set math's parser array index base to zero
