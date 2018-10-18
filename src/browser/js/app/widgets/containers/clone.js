@@ -6,7 +6,7 @@ var Container = require('../common/container'),
 
 var excludedCloneClasses =  ['widget', 'absolute-position', 'ui-resizable', 'ui-draggable', 'not-editable']
 
-class Clone extends Container {
+class Clone extends Container  {
 
     static defaults() {
 
@@ -162,6 +162,25 @@ class Clone extends Container {
             w.container.classList.add('not-editable')
         }
 
+
+
+        
+        if(this.cloneTarget){
+            this.cloneTarget.on(`prop-changed`,(e)=>{
+                let {id, props,widget, options} = e;
+                if(options.fromEditor){ // we only spread values changed from editor
+                const equivalentObj = this.findClonedFromWidget(widget)
+                if(equivalentObj){
+                    equivalentObj.startPropChangeSet('cloneChange',{...options,isResolved:false})
+                    for(var p of props){
+                        equivalentObj.setProp(p.propName,widget.props[p.propName])
+                    }
+                    equivalentObj.applyPropChangeSet('cloneChange')
+                }
+            }
+            })
+
+
         // listen for cloneTarget's deletion
         // if it is just edited, its recreation will be catched by the global 'widget-created' event handler
         this.cloneTarget.on('widget-removed', (e)=>{
@@ -188,11 +207,38 @@ class Clone extends Container {
             resize.check(this.container)
 
         }, {context: this})
+    }
 
         this.cloneLock = false
 
     }
 
+    findClonedFromWidget(widget){
+        // this return the equivalent widget contained in clone if widget inherits from cloneTarget
+        if(!this.cloneTarget)return 
+
+        if(widget===this.cloneTarget){return this.cloneTarget}
+        let insp = widget;
+        let address = []
+        while(insp && insp.parent!==widgetManager){
+            if(insp===this.cloneTarget){break}
+            if(insp.cachedProps.type==="clone" ){return null}
+            address.push(insp.props['id']) // use non resolved id prop
+            insp = insp.parent
+        }
+        address = address.reverse()
+        if(insp===this.cloneTarget){
+            insp = this.children[0]
+           for(var i  of address){
+            insp = insp.children.find(e=>e.props['id']===i)
+            if(!insp)break
+           }
+           return  insp
+        }
+        
+
+    }
+    
     onPropChanged(propName, options, oldPropValue) {
 
         if (super.onPropChanged(...arguments)) return true

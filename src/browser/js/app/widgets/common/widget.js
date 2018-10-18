@@ -157,6 +157,7 @@ class Widget extends EventEmitter {
 
         // cache props (resolve @{props})
         this.cachedProps = {}
+        this.changedPropSet = {}
 
         for (var k in this.props) {
             if (k != 'widgets' && k != 'tabs') {
@@ -489,6 +490,7 @@ class Widget extends EventEmitter {
                 propValue = propValue.replace(new RegExp(k, 'g'), v)
             }
 
+           
             try {
                 propValue = JSON.parse(propValue)
             } catch (err) {}
@@ -506,6 +508,50 @@ class Widget extends EventEmitter {
 
     getProp(propName) {
         return this.cachedProps[propName]
+    }
+    
+    startPropChangeSet(name,options){
+        this.changedSetName = name
+        this.changedSetOptions = options || {}
+    }
+    
+    setProp(propName,propValue,options) {
+        // if a changeSet is still active, the property will not be updated after this call
+        // options = * isComputed(the value contains a ref like @{})
+        //           * isResolved: the value is already returned from resolveProp
+        options = options ||{}
+        const oldPropValue = this.getProp(propName)
+        const changed = propValue!=oldPropValue
+        if(!changed){return }
+
+        const isComputed = options.isComputed || (typeof propValue == 'string' && propValue.includes("@"))
+        let propDefinition=''
+        
+        if(isComputed){propDefinition=propValue}
+        const changeInfo = {propName,oldPropValue,propValue,propDefinition,isComputed,isResolved:options.isResolved}
+
+        const changedSetName= this.changedSetName
+        if(changedSetName){
+            if (!this.changedPropSet[changedSetName])this.changedPropSet[changedSetName] =[]
+            this.changedPropSet[changedSetName].push(changeInfo)
+        }
+        
+        else{
+            this._notifyChangedProps([changeInfo],options)
+        }
+    }
+
+    applyPropChangeSet(options){
+        
+        const changedSetName = this.changedSetName
+        const changedProps = this.changedPropSet[changedSetName]
+        if (changedProps){
+            const mergedOptions = {...(this.changedSetOptions || {}) , ...(options || {})}
+            this._notifyChangedProps(this.changedPropSet[changedSetName],mergedOptions)
+            delete this.changedPropSet[changedSetName] 
+        }
+        this.changedSetOptions = {}
+        this.changedSetName = null
     }
 
     updateProps(propNames, widget, options, updatedProps = []) {
@@ -535,7 +581,7 @@ class Widget extends EventEmitter {
                 } else {
 
                     this.cachedProps[propName] = propValue
-                    changedProps.push({propName, oldPropValue})
+                    changedProps.push({propName, oldPropValue,propValue,propDefinition:this.props[propName],isResolved:true})
 
                 }
 
@@ -549,11 +595,28 @@ class Widget extends EventEmitter {
 
         } else if (changedProps.length) {
 
+            this._notifyChangedProps(changedProps,options)
+
+        }
+
+    }
+
+    _notifyChangedProps(changedProps,options={}){
+        
             for (var i in changedProps) {
-                this.onPropChanged(changedProps[i].propName, options, changedProps[i].oldPropValue)
+            const {propName,propValue,oldPropValue,propDefinition,isComputed,isResolved}  = changedProps[i]
+            if(!isComputed && !propDefinition){
+                this.props[propName] = propValue
+            }
+            else if (propDefinition!==this.props[propName]){
+                this.props[propName] = propDefinition
             }
 
-            widgetManager.trigger('prop-changed', [{
+            this.cachedProps[propName] = (isComputed && !isResolved)?this.resolveProp(propName,false):propValue
+            this.onPropChanged(propName, options, oldPropValue)
+            }
+
+        this.trigger('prop-changed', [{
                 id: this.getProp('id'),
                 props: changedProps,
                 widget: this,
@@ -561,8 +624,6 @@ class Widget extends EventEmitter {
             }])
 
         }
-
-    }
 
     onPropChanged(propName, options, oldPropValue) {
 

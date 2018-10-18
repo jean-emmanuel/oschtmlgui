@@ -5,7 +5,7 @@ var widgetCategories = require('../widgets/').categories,
     {icon, Popup} = require('../ui/utils'),
     locales = require('../locales')
 
-module.exports = function editField(editor, widget, propName, defaultValue){
+module.exports = function editField(editor, widget, propName, defaultValue) {
 
     let dynamic = widget.constructor.dynamicProps.includes(propName),
         disabled = widget.disabledProps.indexOf(propName) > -1,
@@ -54,7 +54,7 @@ module.exports = function editField(editor, widget, propName, defaultValue){
             input = DOM.create(`<textarea class="input no-keybinding" name="${propName}" rows="${value.split('\n').length}">${value}</textarea>`)
 
             DOM.addEventListener(input, ['input', 'focus'], ()=>{
-                input.setAttribute('rows',0)
+                input.setAttribute('rows', 0)
                 input.setAttribute('rows', input.value.split('\n').length)
             })
 
@@ -88,24 +88,69 @@ module.exports = function editField(editor, widget, propName, defaultValue){
 
         var onChange = ()=>{
 
-            input.removeEventListener('change', onChange)
+            //input.removeEventListener('change', onChange)
 
             var v
 
             try {
                 v = JSON.parseFlex(input.value)
-            } catch(err) {
+            } catch (err) {
                 v = input.value
             }
 
             var newWidgets = []
             for (var w of editor.selectedWidgets) {
-                w.props[propName] = v !== '' ? v : deepCopy(defaultValue.value)
-                newWidgets.push(updateWidget(w, {preventSelect: editor.selectedWidgets.length > 1}))
+                const targetV = v !== '' ? v : deepCopy(defaultValue.value)
+                if (dynamic) {
+                    w.setProp(propName, targetV,{fromEditor:true})
+                    newWidgets.push(w)
+                }
+                else{
+
+                    w.props[propName] = targetV
+                    newWidgets.push(updateWidget(w, {forceRecreation:true,preventSelect: editor.selectedWidgets.length > 1}))
+                }
             }
             editor.pushHistory()
             if (newWidgets.length > 1) editor.select(newWidgets)
 
+        }
+        if (dynamic) {
+            const feedbackCb = e=>{
+                const {id,props,options} = e;
+
+                if (widget.hash === e.widget.hash) {
+
+                    if (props.find(el=>el.propName == propName)) {
+                        // don't modify computed
+                        // if(widget.cachedProps[propName]===widget.props[propName]){
+                        input.value = '' + widget.props[propName]
+                        // }
+                    }
+                }
+            }
+
+            widget.on('prop-changed', feedbackCb)
+            var observer = new MutationObserver((mutations)=>{
+                // check for removed target
+                mutations.forEach(function(mutation) {
+                    var nodes = Array.from(mutation.removedNodes);
+                    if (nodes.length) {
+                        var directMatch = nodes.indexOf(input) > -1
+                        var parentMatch = nodes.some(parent=>parent.contains(input));
+                        if (directMatch || parentMatch) {
+                            widget.off('prop-changed', feedbackCb);
+                        }
+                    }
+
+                });
+            }
+            );
+
+            observer.observe(document.getElementById('sidepanel'), {
+                subtree: true,
+                childList: true
+            })
         }
 
         input.addEventListener('change', onChange)
@@ -141,23 +186,23 @@ module.exports = function editField(editor, widget, propName, defaultValue){
             var change
             switch (e.target.getAttribute('data-action')) {
 
-                case 'select':
-                    editor.select(widgetManager.getWidgetByElement(DOM.get(propName === 'widgets' ? widget.widget : widget.wrapper, '> .widget')[DOM.index(e.target.closest('li'))]))
-                    break
+            case 'select':
+                editor.select(widgetManager.getWidgetByElement(DOM.get(propName === 'widgets' ? widget.widget : widget.wrapper, '> .widget')[DOM.index(e.target.closest('li'))]))
+                break
 
-                case 'remove':
-                    var index = DOM.index(e.target.closest('li'))
-                    widget.props[propName].splice(index,1)
+            case 'remove':
+                var index = DOM.index(e.target.closest('li'))
+                widget.props[propName].splice(index, 1)
                     updateWidget(widget, {removedIndexes: [index] })
                     editor.pushHistory({removedIndexes: [index] })
-                    break
+                break
 
-                case 'add':
-                    widget.props[propName] = widget.props[propName] || []
-                    widget.props[propName].push({})
+            case 'add':
+                widget.props[propName] = widget.props[propName] || []
+                widget.props[propName].push({})
                     updateWidget(widget, {addedIndexes: [widget.props[propName].length -1] })
                     editor.pushHistory({addedIndexes: [widget.props[propName].length -1] })
-                    break
+                break
 
             }
 
@@ -168,9 +213,9 @@ module.exports = function editField(editor, widget, propName, defaultValue){
             items: '.sortables',
             placeholder: 'sortable-placeholder btn small',
             start:function(){$(this).sortable( 'refreshPositions' )},
-            update: function(e,ui){
+            update: function(e, ui) {
                 var oldindex = $(ui.item).attr('data-index')
-                var index  = $(ui.item).index()
+                var index = $(ui.item).index()
 
                 widget.props[propName].splice(index, 0, widget.props[propName].splice(oldindex, 1)[0])
                 updateWidget(widget, {removedIndexes: [index, oldindex], addedIndexes: [index, oldindex]})
@@ -197,7 +242,7 @@ module.exports = function editField(editor, widget, propName, defaultValue){
         if (typeof computedValue === 'string') {
             try {
                 computedValue = JSON.stringify(JSON.parse(computedValue), null, ' ')
-            } catch(e) {}
+            } catch (e) {}
         } else {
             computedValue = JSON.stringify(computedValue, null, ' ')
         }
@@ -215,7 +260,7 @@ module.exports = function editField(editor, widget, propName, defaultValue){
                 ${htmlHelp}
             </div>
         `})
-    })
+        })
 
     if (input) {
         return field
