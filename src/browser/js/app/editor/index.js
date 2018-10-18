@@ -317,11 +317,7 @@ var Editor = class Editor {
     }
 
     select(widget, options={}){
-        if(this.selectedWidgets){
-            for(var o of this.selectedWidgets){
-                o.off('prop-changed.editor')
-            }
-        }
+
         if (!options.fromLasso) this.unselect()
 
         if (Array.isArray(widget)) {
@@ -735,7 +731,7 @@ var Editor = class Editor {
 
         this.pushHistory()
 
-        // if (newWidgets.length > 1) this.select(newWidgets)
+        if (newWidgets.length > 1) this.select(newWidgets)
 
     }
 

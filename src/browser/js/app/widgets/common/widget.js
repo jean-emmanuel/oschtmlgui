@@ -516,6 +516,9 @@ class Widget extends EventEmitter {
     }
     
     setProp(propName,propValue,options) {
+        // if a changeSet is still active, the property will not be updated after this call
+        // options = * isComputed(the value contains a ref like @{})
+        //           * isResolved: the value is already returned from resolveProp
         options = options ||{}
         const oldPropValue = this.getProp(propName)
         const changed = propValue!=oldPropValue
@@ -548,6 +551,7 @@ class Widget extends EventEmitter {
             delete this.changedPropSet[changedSetName] 
         }
         this.changedSetOptions = {}
+        this.changedSetName = null
     }
 
     updateProps(propNames, widget, options, updatedProps = []) {

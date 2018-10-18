@@ -31,7 +31,7 @@ function updateWidget(widget, options={}) {
                         widget.onPropChanged(changedProps[i].propName, options, changedProps[i].oldPropValue)
                     }
 
-                    widget.trigger('prop-changed.*', [{
+                    widget.trigger('prop-changed', [{
                         id: widget.getProp('id'),
                         props: changedProps,
                         widget: widget,

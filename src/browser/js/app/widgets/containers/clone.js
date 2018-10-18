@@ -164,16 +164,14 @@ class Clone extends Container  {
 
 
 
-        // will react to any widget deletion
-        // widget-removed are only triggered from the manager from now
-        // TODO : we could avoid useless callbacks if widgets were to trigger widget-removed events
+        
         if(this.cloneTarget){
             this.cloneTarget.on(`prop-changed`,(e)=>{
                 let {id, props,widget, options} = e;
-                if(options.fromEditor){
+                if(options.fromEditor){ // we only spread values changed from editor
                 const equivalentObj = this.findClonedFromWidget(widget)
                 if(equivalentObj){
-                    equivalentObj.startPropChangeSet('cloneChange')
+                    equivalentObj.startPropChangeSet('cloneChange',{...options,isResolved:false})
                     for(var p of props){
                         equivalentObj.setProp(p.propName,widget.props[p.propName])
                     }
@@ -181,28 +179,6 @@ class Clone extends Container  {
                 }
             }
             })
-
-            // this.cloneTarget.on(`widget-removed.${this.hash}`, (e)=>{
-            //     var { widget} = e
-            //     // a clone should not react on its target's nested clones widgets
-            //     // this mechanism is handled by the inner clones
-            //     function containsNonCloned(self,wi){
-            //         let insp = wi.parent;
-            //         while(insp && insp.parent!==widgetManager){
-            //             if(insp===self){return true}
-            //             if(insp.cachedProps.type==="clone"){return false}
-            //             insp = insp.parent
-            //         }
-            //         return false
-            //     }
-            //     if(this.cloneTarget && (this.cloneTarget===widget || containsNonCloned(this.cloneTarget,widget))){
-            //     this.cloneTarget.off(`widget-removed.${this.hash}`)
-            //     this.cleanClone()
-            //     this.cloneTarget = null
-            //     const wasChild = this.cloneTarget!==widget
-
-
-                // }
 
 
         // listen for cloneTarget's deletion
@@ -236,7 +212,9 @@ class Clone extends Container  {
         this.cloneLock = false
 
     }
+
     findClonedFromWidget(widget){
+        // this return the equivalent widget contained in clone if widget inherits from cloneTarget
         if(!this.cloneTarget)return 
 
         if(widget===this.cloneTarget){return this.cloneTarget}
@@ -244,11 +222,11 @@ class Clone extends Container  {
         let address = []
         while(insp && insp.parent!==widgetManager){
             if(insp===this.cloneTarget){break}
-            // if(insp.cachedProps.type==="clone" ){return null}
-            address.push(insp.props['id']) // use non resolved props
+            if(insp.cachedProps.type==="clone" ){return null}
+            address.push(insp.props['id']) // use non resolved id prop
             insp = insp.parent
         }
-
+        address = address.reverse()
         if(insp===this.cloneTarget){
             insp = this.children[0]
            for(var i  of address){
@@ -260,6 +238,7 @@ class Clone extends Container  {
         
 
     }
+    
     onPropChanged(propName, options, oldPropValue) {
 
         if (super.onPropChanged(...arguments)) return true
