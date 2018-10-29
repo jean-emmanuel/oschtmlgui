@@ -75,7 +75,7 @@ module.exports = class Switch extends Widget {
 
             if (value!=this.value || this.value===undefined) this.setValue(value,{sync:true,send:true})
 
-        }, {element: this.widget})
+        }, false, {element: this.widget})
 
     }
 

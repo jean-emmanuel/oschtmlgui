@@ -25,12 +25,12 @@ function checkResizes(context, force){
         }
     }
     for (let i = resizedElems.length - 1; i >= 0; i--)  {
-        resizedElems[i]._resize_widget.trigger('resize', [{
+        resizedElems[i]._resize_widget.trigger('resize', {
             width: resizedElems[i].resizedataw,
             height: resizedElems[i].resizedatah,
             style:cachedStyles[i],
             stopPropagation: true
-        }])
+        })
     }
 
 }

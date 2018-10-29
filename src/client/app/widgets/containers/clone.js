@@ -70,7 +70,7 @@ class Clone extends Container {
 
             }
 
-        }, {context: this})
+        }, this)
 
         widgetManager.on('prop-changed', (e)=>{
 
@@ -82,7 +82,7 @@ class Clone extends Container {
 
             }
 
-        }, {context: this})
+        }, this)
 
     }
 
@@ -150,7 +150,7 @@ class Clone extends Container {
 
         if (!this.cloneTarget) return
 
-        this.cloneTarget.removeEventContext(this)
+        this.cloneTarget.off(null, null, this)
 
         this.cloneTarget = null
 
@@ -168,7 +168,7 @@ class Clone extends Container {
             if (this.cloneTarget === e.widget) {
                 this.unbindTarget()
             }
-        }, {context: this})
+        }, this)
 
         // listen for cloneTarget's content updates
         this.cloneTarget.on('widget-created', (e)=>{
@@ -185,7 +185,7 @@ class Clone extends Container {
 
             this.updateClone()
 
-        }, {context: this})
+        }, this)
 
     }
 

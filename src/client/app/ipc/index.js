@@ -1,11 +1,11 @@
-var EventEmitter = require('wolfy87-eventemitter'),
+var EE3 = require('eventemitter3'),
     uuid = require('nanoid/generate')('0123456789abcdefghijklmnopqrstuvwxyABCDEFGHIJKLMNOPQRSTUVWXYZ', 10)
 
 var reconnectInterval = 5000,
     hearbeatInterval = 25000,
     hearbeatTimeout = 5000
 
-class Ipc extends EventEmitter {
+class Ipc extends EE3 {
 
     constructor() {
 
@@ -59,7 +59,7 @@ class Ipc extends EventEmitter {
                 }, hearbeatTimeout)
             }, hearbeatInterval)
 
-            this.trigger('connect')
+            this.emit('connect')
             this.flush()
 
         }

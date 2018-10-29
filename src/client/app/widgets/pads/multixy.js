@@ -115,17 +115,17 @@ module.exports = class MultiXy extends Pad {
 
             e.stopPropagation = true
 
-            this.pads[id].trigger('draginit', [e])
+            this.pads[id].trigger('draginit', e)
 
-        }, {element: this.wrapper, multitouch: true})
+        }, false, {element: this.wrapper, multitouch: true})
 
         this.on('drag',(e)=>{
 
             var i = this.touchMap[e.pointerId]
 
-            this.pads[i].trigger('drag', [e])
+            this.pads[i].trigger('drag', e)
 
-        }, {element: this.wrapper[0], multitouch: true})
+        }, false, {element: this.wrapper[0], multitouch: true})
 
         this.on('dragend',(e)=>{
 
@@ -133,11 +133,11 @@ module.exports = class MultiXy extends Pad {
 
             e.stopPropagation = true
 
-            this.pads[i].trigger('dragend', [e])
+            this.pads[i].trigger('dragend', e)
 
             delete this.touchMap[e.pointerId]
 
-        }, {element: this.wrapper, multitouch: true})
+        }, false, {element: this.wrapper, multitouch: true})
 
         this.on('change',(e)=>{
             if (e.widget == this) return

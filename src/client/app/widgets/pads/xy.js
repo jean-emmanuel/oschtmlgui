@@ -102,25 +102,25 @@ module.exports = class Xy extends Pad {
 
         this.on('draginit',(e)=>{
             e.stopPropagation = true
-            this.faders.x.trigger('draginit', [e])
-            this.faders.y.trigger('draginit', [e])
+            this.faders.x.trigger('draginit', e)
+            this.faders.y.trigger('draginit', e)
             this.dragHandle()
-        }, {element: this.wrapper})
+        }, false, {element: this.wrapper})
 
         this.on('drag',(e)=>{
-            this.faders.x.trigger('drag', [e])
-            this.faders.y.trigger('drag', [e])
+            this.faders.x.trigger('drag', e)
+            this.faders.y.trigger('drag', e)
             this.dragHandle()
-        }, {element: this.wrapper})
+        }, false, {element: this.wrapper})
 
         this.on('dragend', (e)=>{
             e.stopPropagation = true
-            this.faders.x.trigger('dragend', [e])
-            this.faders.y.trigger('dragend', [e])
+            this.faders.x.trigger('dragend', e)
+            this.faders.y.trigger('dragend', e)
             if (this.getProp('spring')) {
                 this.setValue([this.faders.x.springValue,this.faders.y.springValue],{sync:true,send:true})
             }
-        }, {element: this.wrapper})
+        }, false, {element: this.wrapper})
 
         if (this.getProp('doubleTap')) {
 

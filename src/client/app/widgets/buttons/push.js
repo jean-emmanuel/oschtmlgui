@@ -36,11 +36,11 @@ class Push extends Widget {
         this.on('draginit',()=>{
             if (this.active) return
             this.setValuePrivate(this.getProp('on'),{send:true,sync:true})
-        }, {element: this.widget})
+        }, false, {element: this.widget})
 
         this.on('dragend',()=>{
             this.setValuePrivate(this.getProp('off'),{send:true,sync:true})
-        }, {element: this.widget})
+        }, false, {element: this.widget})
 
         this.value = this.getProp('off')
 

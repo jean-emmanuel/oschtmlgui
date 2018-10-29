@@ -1,5 +1,5 @@
 var widgetManager = require('./managers/widgets'),
-    EventEmitter = require('./events/event-emitter'),
+    EventEmitter = require('eventemitter3'),
     ipc = require('./ipc/')
 
 var Osc = class Osc extends EventEmitter {
@@ -49,7 +49,7 @@ var Osc = class Osc extends EventEmitter {
             }
         }
 
-        this.trigger(data.address, [data.args])
+        this.trigger(data.address, data.args)
 
     }
 

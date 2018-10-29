@@ -18,7 +18,7 @@ module.exports = class _switchers_base extends Widget {
 
         }
 
-        widgetManager.on('change', this.syncHandler.bind(this), {context: this})
+        widgetManager.on('change', this.syncHandler, this)
 
 
     }

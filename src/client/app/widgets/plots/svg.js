@@ -33,7 +33,7 @@ class Svg extends Widget {
         this.height = undefined
         this.width = undefined
 
-        this.on('resize', this.resizeHandleProxy.bind(this), {element: this.widget})
+        this.on('resize', this.resizeHandleProxy, this, {element: this.widget})
 
     }
 

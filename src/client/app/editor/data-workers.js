@@ -124,7 +124,7 @@ function updateWidget(widget, options={}) {
 
     newWidget.container.parentNode.replaceChild(newWidget.container, widget.container)
 
-    if (newWidget.getProp('type') === 'tab') newWidget.parent.trigger('tab-created', [{widget: widget}])
+    if (newWidget.getProp('type') === 'tab') newWidget.parent.trigger('tab-created', {widget: widget})
     if (newWidget.getProp('id') === 'root') DOM.get('.editor-root')[0].setAttribute('data-widget', newWidget.hash)
 
 
@@ -136,12 +136,12 @@ function updateWidget(widget, options={}) {
     if (reuseChildren) {
         // children don't listen to their parent's 'widget-created' event
         // so we have to let them know it's been updated
-        widgetManager.trigger('prop-changed', [{
+        widgetManager.trigger('prop-changed', {
             id: newWidget.getProp('id'),
             props: [],
             widget: newWidget,
             options: {}
-        }])
+        })
     }
 
     resize.check(newWidget.container)

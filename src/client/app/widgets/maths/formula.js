@@ -84,7 +84,7 @@ module.exports = class Formula extends Widget {
         this.conditionState = true
 
 
-        widgetManager.on('change', this.syncHandle.bind(this), {context: this})
+        widgetManager.on('change', this.syncHandle.bind(this), this)
 
         if (this.formulaString.length) this.updateValue({options:{}})
 

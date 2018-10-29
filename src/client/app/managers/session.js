@@ -68,12 +68,12 @@ var SessionManager = class SessionManager {
 
             for (var h in widgetManager.widgets) {
                 if (widgetManager.widgets[h].value !== undefined) {
-                    widgetManager.trigger('change', [{
+                    widgetManager.trigger('change', {
                         widget: widgetManager.widgets[h],
                         id: widgetManager.widgets[h].getProp('id'),
                         linkId: widgetManager.widgets[h].getProp('linkId'),
                         options: {}
-                    }])
+                    })
                 }
             }
 

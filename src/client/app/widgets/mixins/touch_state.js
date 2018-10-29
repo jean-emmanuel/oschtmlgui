@@ -13,7 +13,7 @@ module.exports = (self, options)=>{
                 v:1,
                 split:false
             })
-    }, options)
+    }, false, options)
 
     self.on('dragend', (e)=>{
         if (self.touched == 1) {
@@ -35,7 +35,7 @@ module.exports = (self, options)=>{
         } else if (self.touched > 1){
             self.touched -= 1
         }
-    }, options)
+    }, false, options)
 
     self.onRemove = ()=>{
         if (sendTouchState && self.touched > 0) {

@@ -316,30 +316,30 @@ module.exports = class Range extends Widget {
             if (!id) return
 
             e.stopPropagation = true
-            this.faders[id].trigger('draginit', [e])
+            this.faders[id].trigger('draginit', e)
 
-        }, {element: this.wrapper, multitouch: true})
+        }, false, {element: this.wrapper, multitouch: true})
 
         this.on('drag',(e)=>{
 
             var i = this.touchMap[e.pointerId]
             if (e.shiftKey) {
-                this.faders[0].trigger('drag', [e])
-                this.faders[1].trigger('drag', [e])
+                this.faders[0].trigger('drag', e)
+                this.faders[1].trigger('drag', e)
             } else {
-                this.faders[i].trigger('drag', [e])
+                this.faders[i].trigger('drag', e)
             }
 
-        }, {element: this.wrapper, multitouch: true})
+        }, false, {element: this.wrapper, multitouch: true})
 
         this.on('dragend',(e)=>{
 
             var i = this.touchMap[e.pointerId]
             e.stopPropagation = true
-            this.faders[i].trigger('dragend', [e])
+            this.faders[i].trigger('dragend', e)
             delete this.touchMap[e.pointerId]
 
-        }, {element: this.wrapper, multitouch: true})
+        }, false, {element: this.wrapper, multitouch: true})
 
         if (this.getProp('input')) {
 

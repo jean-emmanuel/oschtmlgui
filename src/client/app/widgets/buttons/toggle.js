@@ -48,11 +48,11 @@ class Toggle extends Widget {
                 this.active = true
                 var newVal = this.state?this.getProp('off'):this.getProp('on')
                 this.setValue(newVal,{sync:true,send:true})
-            }, {element: this.widget})
+            }, false, {element: this.widget})
 
             this.on('dragend',()=>{
                 this.active = false
-            }, {element: this.widget})
+            }, false, {element: this.widget})
 
         }
 

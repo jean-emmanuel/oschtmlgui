@@ -193,7 +193,7 @@ function touchUpCapture(event) {
 
 function triggerWidgetEvent(target, name, event) {
     if (target !== null && target._drag_widget) {
-        target._drag_widget.trigger(name, [event])
+        target._drag_widget.trigger(name, event)
     } else if (target !== null) {
         triggerWidgetEvent(target.closest('.drag-event'), name, event)
     }

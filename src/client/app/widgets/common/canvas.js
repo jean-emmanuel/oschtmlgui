@@ -78,7 +78,7 @@ class Canvas extends Widget {
 
         this.colors = {}
 
-        this.on('resize', this.resizeHandleProxy.bind(this), {element: this.canvas})
+        this.on('resize', this.resizeHandleProxy, this, {element: this.canvas})
 
         this.ctx.arc = (x, y, r, s, e, c)=>{
 

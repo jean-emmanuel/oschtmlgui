@@ -21,7 +21,7 @@ module.exports = class Crossfader extends Switcher {
             horizontal: {type: 'boolean', value: false, help: 'Set to `true` to display values horizontally'}
 
         })
-        
+
     }
 
     constructor(options) {

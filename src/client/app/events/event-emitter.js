@@ -1,17 +1,16 @@
-var WolfyEventEmitter = require('wolfy87-eventemitter'),
+var EE3 = require('eventemitter3'),
     customEvents = {}
 
 customEvents['draginit'] = customEvents['drag'] = customEvents['dragend']  = require('./drag')
 customEvents['resize']  = require('./resize')
 
-module.exports = class EventEmitter extends WolfyEventEmitter {
+module.exports = class EventEmitter extends EE3 {
 
     constructor() {
 
         super()
 
         this._customBindings = {}
-        this._contextEvents = {}
 
         for (var evt in customEvents) {
             this._customBindings[evt] = {
@@ -21,21 +20,27 @@ module.exports = class EventEmitter extends WolfyEventEmitter {
 
     }
 
-    emitEvent(evt, args) {
+    emit(evt, args) {
 
         // Event bubbling
 
-        super.emitEvent(evt, args)
+        var ret = super.emit(evt, args)
 
-        if (args[0] && !args[0].stopPropagation) {
-            if (this.parent) this.parent.emitEvent(evt, args)
+        if (args && !args.stopPropagation) {
+            if (this.parent) this.parent.emit(evt, args)
         }
 
-        return this
+        return ret
 
     }
 
-    addListener(evt, listener, options) {
+    trigger(evt, args) {
+
+        return this.emit(evt, args)
+
+    }
+
+    on(evt, listener, context, options) {
 
         // Custom event setup
 
@@ -50,19 +55,11 @@ module.exports = class EventEmitter extends WolfyEventEmitter {
             this._customBindings[evt].bindings += 1
         }
 
-        if (options && options.context) {
-            var hash = options.context.hash
-            if (!this._contextEvents[hash]) this._contextEvents[hash] = []
-            this._contextEvents[hash].push([evt, listener])
-        }
-
-        super.addListener(evt, listener)
-
-        return this
+        return super.on(evt, listener, context || this)
 
     }
 
-    removeListener(evt, listener) {
+    removeListener(evt, listener, context, once) {
 
         // Custom event teardown
 
@@ -78,39 +75,7 @@ module.exports = class EventEmitter extends WolfyEventEmitter {
             }
         }
 
-        // Remove all listeners is none specified
-
-        if (listener) {
-
-            super.removeListener(evt, listener)
-
-        } else {
-
-            this.removeEvent(evt)
-
-        }
-
-        return this
-
-    }
-
-    removeEventContext(context, evt, listener) {
-
-        var events = this._contextEvents[context.hash]
-
-        if (events) {
-            
-            for (var i = 0; i < events.length; i++) {
-
-                if (evt && evt !== events[i][0]) continue
-                if (listener && listener !== events[i][1]) continue
-
-                this.removeListener(events[i][0], events[i][1])
-            }
-
-            if (!this._contextEvents[context.hash].length) delete this._contextEvents[context.hash]
-
-        }
+        return super.removeListener(evt, listener, context, once)
 
     }
 

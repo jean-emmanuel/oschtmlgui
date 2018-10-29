@@ -209,23 +209,23 @@ class Widget extends EventEmitter {
 
     created(index) {
 
-        this.trigger('widget-created', [{
+        this.trigger('widget-created', {
             id: this.getProp('id'),
             widget: this,
             options: this.reCreateOptions,
             index: index
-        }])
+        })
 
     }
 
     changed(options) {
 
-        this.trigger('change', [{
+        this.trigger('change', {
             widget: this,
             options: options,
             id: this.getProp('id'),
             linkId: this.getProp('linkId')
-        }])
+        })
 
     }
 
@@ -310,13 +310,13 @@ class Widget extends EventEmitter {
                 this.onLinkedPropsChanged(e, 'prop-changed')
             }
 
-            widgetManager.on('widget-created', this.linkedCreatedCallback, {context: this})
-            widgetManager.on('prop-changed', this.linkedPropChangedCallback, {context: this})
+            widgetManager.on('widget-created', this.linkedCreatedCallback, this)
+            widgetManager.on('prop-changed', this.linkedPropChangedCallback, this)
 
         } else if (this.linkedCreatedCallback && !Object.keys(this.linkedPropsValue).length) {
 
-            widgetManager.removeEventContext('widget-created', this.linkedCreatedCallback, {context: this})
-            widgetManager.removeEventContext('prop-changed', this.linkedPropChangedCallback, {context: this})
+            widgetManager.off('widget-created', this.linkedCreatedCallback, this)
+            widgetManager.off('prop-changed', this.linkedPropChangedCallback, this)
 
         }
 
@@ -326,11 +326,11 @@ class Widget extends EventEmitter {
                 this.onLinkedPropsChanged(e, 'change')
             }
 
-            widgetManager.on('change', this.linkedValueChangedCallback, {context: this})
+            widgetManager.on('change', this.linkedValueChangedCallback, this)
 
         } else if (this.linkedPropsValueCallback && !Object.keys(this.linkedPropsValue).length) {
 
-            widgetManager.removeEventContext('change', this.linkedValueChangedCallback, {context: this})
+            widgetManager.off('change', this.linkedValueChangedCallback, this)
 
         }
 
@@ -364,7 +364,7 @@ class Widget extends EventEmitter {
 
     removeOscReceivers() {
 
-        osc.removeEventContext(this)
+        osc.off(null, null, this)
         for (var i in this.oscReceivers) {
             oscReceiverState[i] = this.oscReceivers[i].value
         }
@@ -650,12 +650,12 @@ class Widget extends EventEmitter {
                 this.onPropChanged(changedProps[i].propName, options, changedProps[i].oldPropValue)
             }
 
-            widgetManager.trigger('prop-changed', [{
+            widgetManager.trigger('prop-changed', {
                 id: this.getProp('id'),
                 props: changedProps,
                 widget: this,
                 options: options
-            }])
+            })
 
         }
 
@@ -841,7 +841,7 @@ class Widget extends EventEmitter {
 
     onRemove(){
 
-        widgetManager.removeEventContext(this)
+        widgetManager.off(null, null, this)
         this.removeOscReceivers()
 
     }

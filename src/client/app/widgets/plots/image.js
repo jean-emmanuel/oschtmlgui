@@ -41,8 +41,7 @@ module.exports = class Led extends Widget {
         this.widget.style.setProperty('background-repeat', this.getProp('repeat'))
 
         if (this.getProp('stream') !== '') {
-            this.bindedOnStreamUpdate = this.onStreamUpdate.bind(this)
-            ipc.on('video', this.bindedOnStreamUpdate)
+            ipc.on('video', this.onStreamUpdate, this)
         }
 
     }
