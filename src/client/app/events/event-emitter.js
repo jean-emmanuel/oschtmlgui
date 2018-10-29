@@ -55,7 +55,7 @@ module.exports = class EventEmitter extends EE3 {
             this._customBindings[evt].bindings += 1
         }
 
-        return super.on(evt, listener, context || this)
+        return super.on(evt, listener, context)
 
     }
 
