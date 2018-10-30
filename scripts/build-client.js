@@ -25,7 +25,7 @@ var transforms = [
 ]
 
 if (prod) {
-    console.warn('\x1b[36m%s\x1b[0m', '=> Building minified client bundle, this may take a while...')
+    console.warn('\033[36m=> Building minified client bundle, this may take a while...\033[0m')
     transforms.push([transformWrapper(require('uglifyify')), {global: true}])
 }
 

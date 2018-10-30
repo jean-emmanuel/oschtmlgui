@@ -30,13 +30,18 @@ function std(data){
 
     if (data.includes('process error')) {
         console.error(data.toString())
+        console.log('\033[31m\n=> Test errored ✘\n\033[0m')
+
         end()
     }
 
 }
 
 // timeout after 5s -> no error
-setTimeout(end, 5000)
+setTimeout(()=>{
+    console.log('\033[36m\n=> Test timeout without error ✔\n\033[0m')
+    end()
+}, 5000)
 
 function end(fail){
     process.kill(-proc.pid)
