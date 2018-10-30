@@ -196,7 +196,7 @@ class Panel extends Container {
 
 
     onRemove() {
-        this.off('resize')
+
         super.onRemove()
     }
 
