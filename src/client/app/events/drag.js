@@ -20,7 +20,6 @@ function pointerDownHandler(event) {
 
     if (event.traversing === TRAVERSING_SAMEWIDGET) {
         event.traversingType = event.target.closest('.drag-event')._drag_widget.getProp('type')
-        console.log(event.traversingType)
     }
 
     previousPointers[event.pointerId] = event
@@ -48,7 +47,6 @@ function pointerMoveHandler(event) {
             target && event.traversing === TRAVERSING_SAMEWIDGET
         &&  event.traversingType !== target._drag_widget.getProp('type')
         ) {
-            console.log(event.traversingType,  target._drag_widget.getProp('type'))
             target = null
         }
 
