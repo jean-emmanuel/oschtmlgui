@@ -95,7 +95,7 @@ module.exports = {
     },
 
     reload: function(){
-        console.log('reload?')
+
         var id = Math.random(),
             search = location.search,
             query = 'backupId=' + id
