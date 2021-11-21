@@ -1,7 +1,7 @@
 var Panel = require('./panel'),
     Widget = require('../common/widget'),
     parser = require('../../parser'),
-    {mapToScale} = require('../utils')
+    { mapToScale } = require('../utils')
 
 
 class PadsRow extends Panel {
@@ -18,27 +18,37 @@ class PadsRow extends Panel {
             style: {
             },
             class_specific: {
-                pads: {type: 'number', value: 8, help: 'Defines the number of pads for the row'},
-                start: {type: 'number', value: 48, help: [
-                    'MIDI note number to start with (default is C4)',
-                    'Standard keyboards settings are: `[25, 48]`, `[49, 36]`, `[61, 36]`, `[88, 21]`'
-                ]},
-                traversing: {type: 'boolean', value: true, help: 'Set to `false` to disable traversing gestures'},
-                on: {type: '*', value: 127, help: [
-                    'Set to `null` to send no argument in the osc message',
-                ]},
-                off: {type: '*', value: 0, help: [
-                    'Set to `null` to send no argument in the osc message',
-                ]},
-                velocity: {type: 'boolean', value: false, help: [
-                    'Set to `true` to map the touch coordinates between `off` (top) and `on` (bottom). Requires `on` and `off` to be numbers',
-                ]},
-                mode: {type: 'string', value: 'tap', choices: ['push', 'toggle', 'tap'], help: [
-                    'Interraction mode:',
-                    '- `push` (press & release)',
-                    '- `toggle` (on/off switches)',
-                    '- `tap` (no release)'
-                ]}
+                pads: { type: 'number', value: 8, help: 'Defines the number of pads for the row' },
+                start: {
+                    type: 'number', value: 48, help: [
+                        'MIDI note number to start with (default is C4)',
+                        'Standard keyboards settings are: `[25, 48]`, `[49, 36]`, `[61, 36]`, `[88, 21]`'
+                    ]
+                },
+                traversing: { type: 'boolean', value: true, help: 'Set to `false` to disable traversing gestures' },
+                on: {
+                    type: '*', value: 127, help: [
+                        'Set to `null` to send no argument in the osc message',
+                    ]
+                },
+                off: {
+                    type: '*', value: 0, help: [
+                        'Set to `null` to send no argument in the osc message',
+                    ]
+                },
+                velocity: {
+                    type: 'boolean', value: false, help: [
+                        'Set to `true` to map the touch coordinates between `off` (top) and `on` (bottom). Requires `on` and `off` to be numbers',
+                    ]
+                },
+                mode: {
+                    type: 'string', value: 'tap', choices: ['push', 'toggle', 'tap'], help: [
+                        'Interraction mode:',
+                        '- `push` (press & release)',
+                        '- `toggle` (on/off switches)',
+                        '- `tap` (no release)'
+                    ]
+                }
             }
         })
 
@@ -53,12 +63,12 @@ class PadsRow extends Panel {
         this.height = 100
         this.width = 100
 
-        this.on('resize', (e)=>{
+        this.on('resize', (e) => {
             this.height = e.height
-        }, {element: this.widget})
+        }, { element: this.widget })
 
 
-        this.on('change',(e)=>{
+        this.on('change', (e) => {
 
             var widget = e.widget
 
@@ -92,8 +102,8 @@ class PadsRow extends Panel {
         })
 
         var start = parseInt(this.getProp('start')),
-        pads = parseInt(this.getProp('pads')),
-        i
+            pads = parseInt(this.getProp('pads')),
+            i
 
         // draw
         for (i = start; i < pads + start && i < 128; i++) {
@@ -122,13 +132,13 @@ class PadsRow extends Panel {
             pad._index = i - start
             pad.container.classList.add('not-editable')
             pad._not_editable = true
-            pad.container.classList.add('pad')          
+            pad.container.classList.add('pad')
 
             this.value[i - start] = this.getProp('off')
         }
     }
 
-    setValue(v, options={}) {
+    setValue(v, options = {}) {
 
         if (!Array.isArray(v) || v.length !== 2) return
         if (v[1] !== this.getProp('on') && v[1] !== this.getProp('off')) return

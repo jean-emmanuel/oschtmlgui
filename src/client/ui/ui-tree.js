@@ -5,9 +5,9 @@ var UiWidget = require('./ui-widget'),
     morph = require('nanomorph'),
     locales = require('../locales'),
     raw = require('nanohtml/raw'),
-    {icon} = require('./utils'),
+    { icon } = require('./utils'),
     Root, Panel, Matrix, Keyboard, PadsRow, widgetManager,
-    {widgets, categories} = require('../widgets')
+    { widgets, categories } = require('../widgets')
 
 var widgetIcons = {
     root: 'bookmark',
@@ -69,7 +69,7 @@ class UiTree extends UiWidget {
         this.expanded = {}
         this.init = false
 
-        this.container.addEventListener('fast-click', (event)=>{
+        this.container.addEventListener('fast-click', (event) => {
 
             var node = event.target
             if (node.classList.contains('toggle')) {
@@ -84,7 +84,7 @@ class UiTree extends UiWidget {
 
         })
 
-        doubleClick(this.container, (event)=>{
+        doubleClick(this.container, (event) => {
 
             var node = event.target
             if (node.classList.contains('container')) {
@@ -96,11 +96,11 @@ class UiTree extends UiWidget {
                 }
             }
 
-        }, {ignoreEditorCapture: true})
+        }, { ignoreEditorCapture: true })
 
 
         this.sortables = []
-        this.sortCallback = (event)=>{
+        this.sortCallback = (event) => {
 
             var from = widgetManager.widgets[event.from.getAttribute('data-hash')],
                 to = widgetManager.widgets[event.to.getAttribute('data-hash')]
@@ -116,13 +116,13 @@ class UiTree extends UiWidget {
 
         }
 
-        this.filter.addEventListener('change', ()=>{
+        this.filter.addEventListener('change', () => {
             this.applyFilter()
         })
         var filterTypeTimeout = null
-        this.filter.addEventListener('keydown', ()=>{
+        this.filter.addEventListener('keydown', () => {
             clearTimeout(filterTypeTimeout)
-            filterTypeTimeout = setTimeout(()=>{
+            filterTypeTimeout = setTimeout(() => {
                 this.applyFilter()
             }, 100)
         })
@@ -145,7 +145,7 @@ class UiTree extends UiWidget {
 
         if (this.parent.minimized || this.parent.disabled) {
             clearTimeout(this.deferredUpdateTimeout)
-            this.deferredUpdateTimeout = setTimeout(()=>{
+            this.deferredUpdateTimeout = setTimeout(() => {
                 this.deferredUpdateTree(selectedWidgets)
             })
         } else {
@@ -176,24 +176,24 @@ class UiTree extends UiWidget {
 
 
         // sortable lists
-        DOM.each(this.list, 'ol', (el)=>{
+        DOM.each(this.list, 'ol', (el) => {
             let placeholder = null
             this.sortables.push(new Sortable(el, {
                 group: {
                     name: 'group',
-                    pull: (to, from)=>from.el.dataset.childrenType === to.el.dataset.childrenType || to.el.dataset.childrenType === '',
-                    put: (to, from)=>from.el.dataset.childrenType === to.el.dataset.childrenType || to.el.dataset.childrenType === '',
+                    pull: (to, from) => from.el.dataset.childrenType === to.el.dataset.childrenType || to.el.dataset.childrenType === '',
+                    put: (to, from) => from.el.dataset.childrenType === to.el.dataset.childrenType || to.el.dataset.childrenType === '',
                 },
-                onEnd: (e)=>{
+                onEnd: (e) => {
                     e.from.removeChild(placeholder)
                     placeholder = null
                     if (e.from === e.to && e.newIndex > e.oldIndex) e.newIndex--
                     this.sortCallback(e)
                 },
-                setData: (dataTransfer)=>{
+                setData: (dataTransfer) => {
                     dataTransfer.setDragImage(this.dragDummy, 0, 0)
                 },
-                onStart: (event)=>{
+                onStart: (event) => {
                     placeholder = event.from.insertBefore(event.clone.cloneNode(true), event.from.childNodes[event.oldIndex])
                     placeholder.style.display = 'block'
                 },
@@ -217,7 +217,7 @@ class UiTree extends UiWidget {
                 }
                 parent = parent.parentNode
             }
-            node[0].scrollIntoView({block: 'center'})
+            node[0].scrollIntoView({ block: 'center' })
         }
 
         if (this.parent.minimized) this.parent.restore()
@@ -226,10 +226,10 @@ class UiTree extends UiWidget {
 
     blinkSelected() {
 
-        DOM.each(this.list, '.editing', (el)=>{
+        DOM.each(this.list, '.editing', (el) => {
             el.classList.add('editor-blink')
-            el.scrollIntoView({block: 'center'})
-            setTimeout(()=>{
+            el.scrollIntoView({ block: 'center' })
+            setTimeout(() => {
                 el.classList.remove('editor-blink')
             }, 800)
         })
@@ -239,7 +239,7 @@ class UiTree extends UiWidget {
     select() {
 
         // hint selection in folded containers
-        DOM.each(this.list, '.contains-editing', (element)=>{
+        DOM.each(this.list, '.contains-editing', (element) => {
             element.classList.remove('contains-editing')
         })
         var selected = DOM.get(this.list, '.editing')[0]
@@ -264,7 +264,7 @@ class UiTree extends UiWidget {
                             data-widget="${widget.hash}" data-type="${widget.getProp('type')}">
                         ${raw(icon(widgetIcons[widget.getProp('type')] || 'root'))}${id}</li>`
 
-        if (widget instanceof Panel && !(widget instanceof Matrix || widget instanceof Keyboard || widget instanceof PadsRow)) {
+        if (widget instanceof Panel && !(widget instanceof Matrix || widget instanceof Keyboard || widget instanceof PadsRow)) {
             node.insertBefore(html`<span class="toggle no-widget-select"></span>`, node.childNodes[0])
             node.classList.add('container')
             if (this.expanded[widget.hash]) node.classList.add('expanded')
@@ -293,7 +293,7 @@ class UiTree extends UiWidget {
         var filter = this.filter.value.replace(/type\:[^\s]+/g, '').trim(),
             types = this.filter.value.match(/type\:([^\s]+)/g)
 
-        if (types) types = types.map(x=>x.split(':')[1])
+        if (types) types = types.map(x => x.split(':')[1])
 
         if (!filter && !types) {
             this.list.classList.remove('filter-active')
@@ -301,15 +301,15 @@ class UiTree extends UiWidget {
             this.list.classList.add('filter-active')
 
             var show = []
-            DOM.each(this.list, 'li', (element)=>{
+            DOM.each(this.list, 'li', (element) => {
                 var match = element.innerText.includes(filter)
                 if (types && !types.includes(element.dataset.type)) match = false
                 element.classList.toggle('filter-hide', !match)
                 if (match) show.push(element)
             })
 
-            DOM.each(this.list, '.container.filter-hide', (element)=>{
-                if (show.some(el=>element.contains(el))) element.classList.remove('filter-hide')
+            DOM.each(this.list, '.container.filter-hide', (element) => {
+                if (show.some(el => element.contains(el))) element.classList.remove('filter-hide')
             })
 
         }
