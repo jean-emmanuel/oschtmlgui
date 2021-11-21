@@ -10,12 +10,10 @@
     width: 220rem;
     height: 90rem;
 }
-
-.drumpads-container {
+.pads-row-container {
     width: 220rem;
     height: 90rem;
 }
-
 .patchbay-container {
     width: 240rem;
     height: 160rem;
@@ -706,7 +704,49 @@
 
 }
 
+.pads-row-container {
 
+    --widget-padding: 0rem;
+    --alpha-fill-off: 0;
+    --alpha-fill-on: .75;
+
+    --color-key-on: var(--color-fill);
+    --alpha-key-off: var(--alpha-fill-off);
+    --alpha-key-on: var(--alpha-fill-on);
+
+    --widget-keypad:  calc(var(--widget-padding) + var(--line-width));
+
+    > inner {
+
+        padding: calc(var(--widget-padding) + var(--line-width));
+        flex: 1;
+        @include pseudo-stroke($z: 2);
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        overflow: hidden;
+    }
+
+    .pad {
+        --alpha-fill-on: var(--alpha-key-on);
+        --line-width: 0!important;
+        flex: 1;
+        width: auto;
+        min-width: auto;
+        height: auto;
+        inner {
+            margin: 1rem 0.5rem!important;
+            --widget-padding: -1rem;
+            &:before {
+                content: none;
+            }
+            &:after {
+                background: var(--color-key-on);
+                z-index: 1;
+            }
+        }
+    }
+}
 
 // iOS13+ scrollbar shim
 .iOS13 {

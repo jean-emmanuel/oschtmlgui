@@ -4,11 +4,11 @@ var Panel = require('./panel'),
     {mapToScale} = require('../utils')
 
 
-class Drumpads extends Panel {
+class PadsRow extends Panel {
 
     static description() {
 
-        return 'Drumpads.'
+        return 'Row of pads intended to act like a drumpad (send midi notes data).'
 
     }
 
@@ -18,12 +18,13 @@ class Drumpads extends Panel {
             style: {
             },
             class_specific: {
-                pads: {type: 'number', value: 8, help: 'Defines the number of pads (one row)'},
+                pads: {type: 'number', value: 8, help: 'Defines the number of pads for the row'},
                 start: {type: 'number', value: 48, help: [
                     'MIDI note number to start with (default is C4)',
                     'Standard keyboards settings are: `[25, 48]`, `[49, 36]`, `[61, 36]`, `[88, 21]`'
                 ]},
-                on: {type: '*', value: 1, help: [
+                traversing: {type: 'boolean', value: true, help: 'Set to `false` to disable traversing gestures'},
+                on: {type: '*', value: 127, help: [
                     'Set to `null` to send no argument in the osc message',
                 ]},
                 off: {type: '*', value: 0, help: [
@@ -32,7 +33,7 @@ class Drumpads extends Panel {
                 velocity: {type: 'boolean', value: false, help: [
                     'Set to `true` to map the touch coordinates between `off` (top) and `on` (bottom). Requires `on` and `off` to be numbers',
                 ]},
-                mode: {type: 'string', value: 'push', choices: ['push', 'toggle', 'tap'], help: [
+                mode: {type: 'string', value: 'tap', choices: ['push', 'toggle', 'tap'], help: [
                     'Interraction mode:',
                     '- `push` (press & release)',
                     '- `toggle` (on/off switches)',
@@ -53,7 +54,7 @@ class Drumpads extends Panel {
         this.width = 100
 
         this.on('resize', (e)=>{
-            this.height = this.width = e.height
+            this.height = e.height
         }, {element: this.widget})
 
 
@@ -62,7 +63,6 @@ class Drumpads extends Panel {
             var widget = e.widget
 
             if (widget === this) return
-
 
             var value
             if (widget.getValue()) {
@@ -89,16 +89,11 @@ class Drumpads extends Panel {
                 ...e.options,
                 id: widget.getProp('id')
             })
-
-
         })
 
         var start = parseInt(this.getProp('start')),
         pads = parseInt(this.getProp('pads')),
         i
-
-
-        this.container.style.setProperty('--nkeys', pads)
 
         // draw
         for (i = start; i < pads + start && i < 128; i++) {
@@ -106,8 +101,8 @@ class Drumpads extends Panel {
             var data = {
                 top: 'auto',
                 left: 'auto',
-                height: this.height,
-                width: this.width,
+                height: 'auto',
+                width: 'auto',
                 type: 'button',
                 mode: this.getProp('mode'),
                 id: this.getProp('id') + '/' + i,
@@ -127,69 +122,10 @@ class Drumpads extends Panel {
             pad._index = i - start
             pad.container.classList.add('not-editable')
             pad._not_editable = true
-            pad.container.classList.add('key')
-            pad.container.classList.add('white')           
+            pad.container.classList.add('pad')          
 
             this.value[i - start] = this.getProp('off')
-
         }
-        
-
-        
-
-        /*var start = parseInt(this.getProp('start')),
-            keys = parseInt(this.getProp('keys'))
-
-        var pattern = 'wbwbwwbwbwbw',
-            whiteKeys = 0, whiteKeys2 = 0, i
-
-        for (i = start; i < keys + start && i < 128; i++) {
-            if (pattern[i % 12] == 'w') whiteKeys++
-        }
-
-        this.container.style.setProperty('--nkeys', whiteKeys)
-
-        for (i = start; i < keys + start && i < 128; i++) {
-
-            var data = {
-                top: 'auto',
-                left: 'auto',
-                height: 'auto',
-                width: 'auto',
-                type: 'button',
-                mode: this.getProp('mode'),
-                id: this.getProp('id') + '/' + i,
-                label: false,
-                css: '',
-                bypass: true,
-                on: 1,
-                off: 0,
-            }
-
-            var key = parser.parse({
-                data: data,
-                parentNode: this.widget,
-                parent: this
-            })
-
-            key._index = i - start
-            key.container.classList.add('not-editable')
-            key._not_editable = true
-            key.container.classList.add('key')
-
-            if (pattern[i % 12] == 'w') {
-                key.container.classList.add('white')
-                whiteKeys2++
-            } else {
-                key.container.classList.add('black')
-                key.container.style.setProperty('--rank', whiteKeys2)
-                key._black = true
-            }
-
-            this.value[i - start] = this.getProp('off')
-
-        }*/
-
     }
 
     setValue(v, options={}) {
@@ -205,9 +141,9 @@ class Drumpads extends Panel {
 }
 
 
-Drumpads.dynamicProps = Drumpads.prototype.constructor.dynamicProps.concat(
+PadsRow.dynamicProps = PadsRow.prototype.constructor.dynamicProps.concat(
     'on',
     'off',
 )
 
-module.exports = Drumpads
+module.exports = PadsRow
