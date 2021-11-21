@@ -17,6 +17,7 @@ module.exports.widgets = {
     clone: require('./containers/clone'),
     fragment: require('./containers/fragment'),
     matrix: require('./containers/matrix'),
+    drumpads: require('./containers/drumpads'),
     keyboard: require('./containers/keyboard'),
     patchbay: require('./containers/patchbay').PatchBay,
     patchbaynode: require('./containers/patchbay').PatchBayNode,
@@ -56,7 +57,7 @@ module.exports.widgets = {
 
 module.exports.categories = {
     'Basics':['button', 'switch', 'dropdown', 'menu', 'input', 'textarea', 'file'],
-    'Containers':['panel', 'modal', 'clone', 'fragment', 'matrix', 'keyboard', 'patchbay'],
+    'Containers':['panel', 'modal', 'clone', 'fragment', 'matrix', 'keyboard', 'drumpads', 'patchbay'],
     'Frames':['frame', 'svg', 'html', 'image'],
     'Graphs':['plot','eq','visualizer'],
     'Indicators':['led', 'text'],

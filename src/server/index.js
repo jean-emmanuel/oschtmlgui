@@ -64,6 +64,7 @@ function openClient() {
     var address = settings.appAddresses()[0]
 
     var launch = ()=>{
+
         var win = require('./electron-window')({address:address, shortcuts:true, fullscreen: settings.read('fullscreen'), id: 'client'})
         win.on('error', ()=>{
             console.log('ERR')

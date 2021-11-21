@@ -6,7 +6,7 @@ var UiWidget = require('./ui-widget'),
     locales = require('../locales'),
     raw = require('nanohtml/raw'),
     {icon} = require('./utils'),
-    Root, Panel, Matrix, Keyboard, widgetManager,
+    Root, Panel, Matrix, Keyboard, Drumpads, widgetManager,
     {widgets, categories} = require('../widgets')
 
 var widgetIcons = {
@@ -54,6 +54,7 @@ class UiTree extends UiWidget {
         Panel = require('../widgets/containers/panel')
         Matrix = require('../widgets/containers/matrix')
         Keyboard = require('../widgets/containers/keyboard')
+        Drumpads = require('../widgets/containers/drumpads')
         widgetManager = require('../managers/widgets')
 
         super(options)
@@ -263,7 +264,7 @@ class UiTree extends UiWidget {
                             data-widget="${widget.hash}" data-type="${widget.getProp('type')}">
                         ${raw(icon(widgetIcons[widget.getProp('type')] || 'root'))}${id}</li>`
 
-        if (widget instanceof Panel && !(widget instanceof Matrix || widget instanceof Keyboard)) {
+        if (widget instanceof Panel && !(widget instanceof Matrix || widget instanceof Keyboard || widget instanceof Drumpads)) {
             node.insertBefore(html`<span class="toggle no-widget-select"></span>`, node.childNodes[0])
             node.classList.add('container')
             if (this.expanded[widget.hash]) node.classList.add('expanded')
