@@ -1,5 +1,6 @@
 var notifications = require('./notifications'),
-    loading = null, timeout = null
+    loading = null, timeout = null,
+    updateThemeColor = require('./ios').updateThemeColor
 
 module.exports = function uiLoading(title) {
 
@@ -8,6 +9,7 @@ module.exports = function uiLoading(title) {
         timeout = setTimeout(()=>{
             notifications.remove(loading)
             loading = null
+            updateThemeColor()
         }, 500)
     } else if (title !== false) {
         notifications.add({

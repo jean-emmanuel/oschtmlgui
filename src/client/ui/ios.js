@@ -57,6 +57,25 @@ if (iOS) {
     }
 }
 
+
+    // In iOS the meta theme-color tag sets the title bar color
+    // To work with bgcolor changed in editor it needs to be called after the root-container is created
+function updateThemeColor() {
+    var rootContainer = document.querySelector('.root-container')
+    if (rootContainer) {
+        var titleBarColor = getComputedStyle(rootContainer).getPropertyValue('--color-background').trim()
+        var metaThemeColor = document.querySelector('meta[name=theme-color]')
+        if (metaThemeColor) {
+            metaThemeColor.setAttribute('content', titleBarColor)
+        } else {
+            console.warn('Meta theme-color tag not found.')
+        }
+    } else {
+        console.error('Error: .root-container not found.')
+    }
+}
+
+
 if (iOS13) document.body.classList.add('iOS13')
 
-module.exports = iOS
+module.exports = {iOS, updateThemeColor}
